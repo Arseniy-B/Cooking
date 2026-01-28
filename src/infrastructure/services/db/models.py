@@ -1,7 +1,6 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 from datetime import timedelta
-from pathlib import Path
 
 
 class Base(DeclarativeBase):
@@ -25,7 +24,7 @@ class Ingredient(Base):
 class RecipeStep(Base):
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), index=True)
     step_number: Mapped[int]
-    image: Mapped[Path]
+    image: Mapped[str]
     description: Mapped[str]
     time: Mapped[timedelta]
 
