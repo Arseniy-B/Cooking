@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from src.admin_setup import admin
+from fastadmin import fastapi_app as admin_app
+from src.admin_setup import lifespan
 
-app = FastAPI()
-app.mount("/admin", admin.app)
+app = FastAPI(lifespan=lifespan)
+app.mount("/admin", admin_app)

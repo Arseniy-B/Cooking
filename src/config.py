@@ -23,8 +23,15 @@ class PostgresSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="allow")
 
 
-class Config(BaseModel): 
-    db: PostgresSettings = PostgresSettings() # pyright: ignore
+class AdminPanel(BaseSettings):
+    ADMIN_PASSWORD: str
+    ADMIN_USERNAME: str
+    model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="allow")
+
+
+class Config(BaseModel):
+    db: PostgresSettings = PostgresSettings()  # pyright: ignore
+    admin_panel: AdminPanel = AdminPanel()  # pyright: ignore
 
 
 config = Config()

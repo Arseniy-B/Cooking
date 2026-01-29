@@ -1,21 +1,27 @@
-from crudadmin import CRUDAdmin
+from fastapi import FastAPI
+import bcrypt
+from src.infrastructure.services.db.models import User, UserAdmin
+from contextlib import asynccontextmanager
 from src.infrastructure.services.db.db import db_helper
-from src.infrastructure.services.db.models import Ingredient
-from src.infrastructure.adapters.recipe.schemas import IngredientCreate, IngredientUpdate
+from sqlalchemy import select
+from src.config import config
 
 
-admin = CRUDAdmin(
-    session=db_helper.get_session,
-    SECRET_KEY="your-secret-key-here",
-    initial_admin={
-        "username": "admin",
-        "password": "secure_password123"
-    }
-)
+async def create_superuser():
+    session = db_helper.get_scoped_session()
+    user = await session.scalar(
+        select(User).where(User.is_superuser)
+    )
 
-admin.add_view(
-    model=Ingredient,
-    create_schema=IngredientCreate,
-    update_schema=IngredientUpdate,
-    allowed_actions={"view", "create", "update", "delete"}
-)
+    hash_password = bcrypt.hashpw(config.admin_panel.ADMIN_PASSWORD.encode(), bcrypt.gensalt()).decode()
+    if not user:
+        session.add(User(username=config.admin_panel.ADMIN_USERNAME, hash_password=hash_password, is_superuser=True))
+
+    await session.commit()
+
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_superuser()
+    yield
