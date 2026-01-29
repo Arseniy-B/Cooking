@@ -28,11 +28,6 @@ class Ingredient(Base):
     descriptions: Mapped[str]
 
 
-@register(Ingredient, sqlalchemy_sessionmaker=db_helper.session_factory)
-class IngredientAdmin(SqlAlchemyModelAdmin):
-    pass
-
-
 class RecipeStep(Base):
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), index=True)
     step_number: Mapped[int]
@@ -62,6 +57,26 @@ class User(Base):
 
     def __str__(self):
         return self.username
+
+
+@register(Ingredient, sqlalchemy_sessionmaker=db_helper.session_factory)
+class IngredientAdmin(SqlAlchemyModelAdmin):
+    pass
+
+
+@register(RecipeStep, sqlalchemy_sessionmaker=db_helper.session_factory)
+class RecipStepAdmin(SqlAlchemyModelAdmin):
+    pass
+
+
+@register(StepIngredient, sqlalchemy_sessionmaker=db_helper.session_factory)
+class StepIngredientAdmin(SqlAlchemyModelAdmin):
+    pass
+
+
+@register(Recipe, sqlalchemy_sessionmaker=db_helper.session_factory)
+class RecipeAdmin(SqlAlchemyModelAdmin):
+    pass
 
 
 @register(User, sqlalchemy_sessionmaker=db_helper.session_factory)
