@@ -61,3 +61,12 @@ class Recipe(BaseModel):
         if 0 > self.difficulty > 5:
             raise ValidationError(fields=["difficulty"])
         return self
+
+
+class RecipeSearch(BaseModel):
+    name: str | None = None
+    difficulty: int | None = None
+    country: str | None = None
+    total_time_from: timedelta | None = None 
+    total_time_to: timedelta | None = None
+    ingredients: list[RecipeIngredient] | None = None

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import bcrypt
-from src.infrastructure.services.db.models import User, UserAdmin
+from src.infrastructure.services.db.models import User
 from contextlib import asynccontextmanager
 from src.infrastructure.services.db.db import db_helper
 from sqlalchemy import select
