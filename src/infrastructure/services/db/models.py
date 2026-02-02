@@ -4,8 +4,15 @@ from datetime import timedelta
 
 import bcrypt
 from fastadmin import SqlAlchemyModelAdmin, register
-from sqlalchemy import Boolean, ForeignKey, String, Text, select, update
-from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text, select, update
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    declared_attr,
+    mapped_column,
+    relationship,
+)
+from sqlalchemy.types import Time
 
 from src.infrastructure.services.db.db import db_helper
 
@@ -17,7 +24,7 @@ class Base(DeclarativeBase):
     def __tablename__(cls) -> str:
         return cls.__name__.lower()
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
 
 class Ingredient(Base):
@@ -28,24 +35,36 @@ class Ingredient(Base):
     descriptions: Mapped[str]
 
 
-class RecipeStep(Base):
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), index=True)
-    step_number: Mapped[int]
-    image: Mapped[str]
-    description: Mapped[str]
-    time: Mapped[timedelta]
-
-
-class StepIngredient(Base):
-    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id"), index=True)
-    step_id: Mapped[int] = mapped_column(ForeignKey("recipestep.id"), index=True)
-    quantity: Mapped[float]
-
-
 class Recipe(Base):
     name: Mapped[str]
-    country: Mapped[str] = mapped_column(nullable=True)
+    country: Mapped[str]
     difficulty: Mapped[int]
+
+    steps = relationship(
+        "RecipeStep", back_populates="recipe", cascade="all, delete-orphan"
+    )
+
+
+class RecipeStep(Base):
+    step_number: Mapped[int]
+    image_path: Mapped[str]
+    description: Mapped[str]
+    time_seconds: Mapped[int]
+
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), index=True)
+    recipe = relationship("Recipe", back_populates="steps")
+    ingredients = relationship(
+        "RecipeStepIngredient", back_populates="recipe_step", cascade="all, delete-orphan"
+    )
+
+
+class RecipeStepIngredient(Base):
+    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredient.id"), index=True)
+    recipe_step_id: Mapped[int] = mapped_column(ForeignKey("recipestep.id"), index=True)
+    quantity: Mapped[float]
+
+    recipe_step = relationship("RecipeStep", back_populates="ingredients")
+    ingredient = relationship("Ingredient", back_populates="steps")
 
 
 class User(Base):
@@ -69,7 +88,7 @@ class RecipStepAdmin(SqlAlchemyModelAdmin):
     pass
 
 
-@register(StepIngredient, sqlalchemy_sessionmaker=db_helper.session_factory)
+@register(RecipeStepIngredient, sqlalchemy_sessionmaker=db_helper.session_factory)
 class StepIngredientAdmin(SqlAlchemyModelAdmin):
     pass
 

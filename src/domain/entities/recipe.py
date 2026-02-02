@@ -1,13 +1,14 @@
 from pydantic import BaseModel, model_validator
 from datetime import timedelta
-from pathlib import Path
 from src.domain.exceptions import ValidationError, FrendlyValidationError
 
 
-class Nutrients(BaseModel):
+class Ingredient(BaseModel):
+    name: str
     fats: float
     proteins: float
     carbohydrates: float
+    descriptions: str
 
     @model_validator(mode="after")
     def validator(self):
@@ -24,36 +25,29 @@ class Nutrients(BaseModel):
         return self
 
 
-class Ingredient(BaseModel):
-    name: str
-    descriptions: str
-    nutrients: Nutrients
-
-
-class RecipeIngredient:
+class RecipeStepIngredient(BaseModel):
     ingredient: Ingredient
     quantity: float
 
 
 class RecipeStep(BaseModel):
-    number: int
+    step_number: int
+    image_path: str | None = None
+    time_seconds: int
     description: str
-    time: timedelta
-    ingredients: list[RecipeIngredient]
-    image: Path | None = None
+    ingredients: list[RecipeStepIngredient]
 
     @model_validator(mode="after")
     def validator(self):
-        if self.number < 0:
+        if self.step_number < 0:
             raise ValidationError(fields=["number"])
         return self
 
 
 class Recipe(BaseModel):
-    id: int
     name: str
-    difficulty: int
     country: str | None
+    difficulty: int
     steps: list[RecipeStep]
 
     @model_validator(mode="after")
@@ -67,6 +61,6 @@ class RecipeSearch(BaseModel):
     name: str | None = None
     difficulty: int | None = None
     country: str | None = None
-    total_time_from: timedelta | None = None 
+    total_time_from: timedelta | None = None
     total_time_to: timedelta | None = None
-    ingredients: list[RecipeIngredient] | None = None
+    ingredients: list[RecipeStepIngredient] | None = None
