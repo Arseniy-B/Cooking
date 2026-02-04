@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, ConfigDict
 from datetime import timedelta
 from src.domain.exceptions import ValidationError, FrendlyValidationError
 
@@ -8,7 +8,9 @@ class Ingredient(BaseModel):
     fats: float
     proteins: float
     carbohydrates: float
-    descriptions: str
+    description: str
+
+    model_config = ConfigDict(from_attributes=True)
 
     @model_validator(mode="after")
     def validator(self):
@@ -28,6 +30,7 @@ class Ingredient(BaseModel):
 class RecipeStepIngredient(BaseModel):
     ingredient: Ingredient
     quantity: float
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RecipeStep(BaseModel):
@@ -36,6 +39,7 @@ class RecipeStep(BaseModel):
     time_seconds: int
     description: str
     ingredients: list[RecipeStepIngredient]
+    model_config = ConfigDict(from_attributes=True)
 
     @model_validator(mode="after")
     def validator(self):
@@ -48,11 +52,12 @@ class Recipe(BaseModel):
     name: str
     country: str | None
     difficulty: int
-    steps: list[RecipeStep]
+    recipe_steps: list[RecipeStep]
+    model_config = ConfigDict(from_attributes=True)
 
     @model_validator(mode="after")
     def validator(self):
-        if 0 > self.difficulty > 5:
+        if not (0 <= self.difficulty <= 5):
             raise ValidationError(fields=["difficulty"])
         return self
 
@@ -64,3 +69,5 @@ class RecipeSearch(BaseModel):
     total_time_from: timedelta | None = None
     total_time_to: timedelta | None = None
     ingredients: list[RecipeStepIngredient] | None = None
+
+    model_config = ConfigDict(from_attributes=True)

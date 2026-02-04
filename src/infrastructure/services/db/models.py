@@ -1,6 +1,5 @@
 import typing as tp
 import uuid
-from datetime import timedelta
 
 import bcrypt
 from fastadmin import SqlAlchemyModelAdmin, register
@@ -12,7 +11,6 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship,
 )
-from sqlalchemy.types import Time
 
 from src.infrastructure.services.db.db import db_helper
 
@@ -32,7 +30,7 @@ class Ingredient(Base):
     fats: Mapped[float]
     proteins: Mapped[float]
     carbohydrates: Mapped[float]
-    descriptions: Mapped[str]
+    description: Mapped[str]
 
 
 class Recipe(Base):
@@ -40,7 +38,7 @@ class Recipe(Base):
     country: Mapped[str]
     difficulty: Mapped[int]
 
-    steps = relationship(
+    recipe_steps = relationship(
         "RecipeStep", back_populates="recipe", cascade="all, delete-orphan"
     )
 
@@ -48,13 +46,15 @@ class Recipe(Base):
 class RecipeStep(Base):
     step_number: Mapped[int]
     image_path: Mapped[str]
-    description: Mapped[str]
     time_seconds: Mapped[int]
+    description: Mapped[str]
 
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id"), index=True)
-    recipe = relationship("Recipe", back_populates="steps")
+    recipe = relationship("Recipe", back_populates="recipe_steps")
     ingredients = relationship(
-        "RecipeStepIngredient", back_populates="recipe_step", cascade="all, delete-orphan"
+        "RecipeStepIngredient",
+        back_populates="recipe_step",
+        cascade="all, delete-orphan",
     )
 
 
@@ -64,7 +64,7 @@ class RecipeStepIngredient(Base):
     quantity: Mapped[float]
 
     recipe_step = relationship("RecipeStep", back_populates="ingredients")
-    ingredient = relationship("Ingredient", back_populates="steps")
+    ingredient = relationship("Ingredient")
 
 
 class User(Base):
