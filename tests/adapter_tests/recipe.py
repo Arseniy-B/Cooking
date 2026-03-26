@@ -47,4 +47,6 @@ async def test_success(session: AsyncSession):
 
     search = RecipeSearch(name="томат")
     recipe_adapter = RecipeAdapter(session)
-    await recipe_adapter.match_recipe(search)
+    ans = await recipe_adapter.match_recipe(search)
+    
+    assert len(ans) == 2

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator, ConfigDict
+from pydantic import BaseModel, model_validator, ConfigDict, field_serializer
 from datetime import timedelta
 from src.domain.exceptions import ValidationError, FrendlyValidationError
 
@@ -26,6 +26,10 @@ class Ingredient(BaseModel):
             )
         return self
 
+    @field_serializer("name")
+    def name_serialize(self, name: str):
+        return name.lower()
+
 
 class RecipeStepIngredient(BaseModel):
     ingredient: Ingredient
@@ -52,14 +56,21 @@ class Recipe(BaseModel):
     name: str
     country: str | None
     difficulty: int
+    views: int
     recipe_steps: list[RecipeStep]
     model_config = ConfigDict(from_attributes=True)
+    image_path: str
+    cost: float
 
     @model_validator(mode="after")
     def validator(self):
         if not (0 <= self.difficulty <= 5):
             raise ValidationError(fields=["difficulty"])
         return self
+
+    @field_serializer("name")
+    def name_serialize(self, name: str):
+        return name.lower()
 
 
 class RecipeSearch(BaseModel):
@@ -68,6 +79,15 @@ class RecipeSearch(BaseModel):
     country: str | None = None
     total_time_from: timedelta | None = None
     total_time_to: timedelta | None = None
-    ingredients: list[RecipeStepIngredient] | None = None
+    popular: bool | None = None
+    cost: bool | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class IngredientSearch(BaseModel):
+    name: str
+
+    @field_serializer("name")
+    def serialize(self, name: str):
+        return name.lower()

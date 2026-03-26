@@ -1,12 +1,19 @@
-from src.domain.ports.recipe import RecipePort
-from src.domain.entities.recipe import Recipe as RecipeSchema, RecipeSearch
-from src.infrastructure.services.db.models import Recipe, RecipeStep, Ingredient, RecipeStepIngredient
-from src.infrastructure.services.db.db import AsyncSession
-from fastapi_pagination import Page
-from fastapi_pagination.ext.sqlalchemy import apaginate
 from fastapi_pagination import Params
-from sqlalchemy import select, desc, and_, func, or_, Select
+from fastapi_pagination.ext.sqlalchemy import apaginate
+from sqlalchemy import Select, select, func, desc, asc
 from sqlalchemy.orm import selectinload
+
+from src.domain.entities.recipe import Ingredient as IngredientSchema
+from src.domain.entities.recipe import IngredientSearch, RecipeSearch
+from src.domain.entities.recipe import Recipe as RecipeSchema
+from src.domain.ports.recipe import RecipePort
+from src.infrastructure.services.db.db import AsyncSession
+from src.infrastructure.services.db.models import (
+    Ingredient,
+    Recipe,
+    RecipeStep,
+    RecipeStepIngredient,
+)
 
 
 class RecipeAdapter(RecipePort):
@@ -14,8 +21,23 @@ class RecipeAdapter(RecipePort):
         self.session = session
 
     async def match_recipe(self, search: RecipeSearch, page: int = 1, size: int = 20) -> list[RecipeSchema]:
+        order_by_classes = []
         stmt = await self._get_main_stmt()
+
+        if search.name:
+            stmt = stmt.where(Recipe.name.ilike(f"%{search.name}%"))
+            order_by_classes.append(func.similarity(Recipe.name, search.name).desc())
+        if search.popular is not None:
+            order_by_classes.append(desc(Recipe.views) if search.popular else asc(Recipe.views))
+        if search.cost is not None:
+            order_by_classes.append(desc(Recipe.cost) if search.cost else asc(Recipe.cost))
+
+        if order_by_classes:
+            stmt = stmt.order_by(*order_by_classes)
         db_recipes = await apaginate(self.session, stmt, params=Params(page=page, size=size))
+        for recipe in db_recipes.items:
+            recipe.views += 1
+        await self.session.commit()
         return [RecipeSchema.model_validate(recipe) for recipe in db_recipes.items]
 
     async def _get_main_stmt(self) -> Select:
@@ -28,10 +50,12 @@ class RecipeAdapter(RecipePort):
                     )
                 )
             )
-            .order_by(Recipe.name)
         )
         return stmt
 
-    async def _add_name_to_search(self, stmt: Select):
-        ...
-        
+    async def get_ingredients(self, search: IngredientSearch, page: int=1, size: int=20) -> list[IngredientSchema]: 
+        stmt = select(Ingredient).where(Ingredient.name.op("%")(search.name)).order_by(func.similarity(Ingredient.name, search.name).desc())
+        db_ingredients =  await apaginate(self.session, stmt, params=Params(page=page, size=size))
+        ingredients = [IngredientSchema.model_validate(i.__dict__) for i in db_ingredients.items]
+        return ingredients
+
