@@ -1,6 +1,7 @@
 from pydantic import BaseModel, model_validator, ConfigDict, field_serializer
 from datetime import timedelta
 from src.domain.exceptions import ValidationError, FrendlyValidationError
+from uuid import UUID
 
 
 class Ingredient(BaseModel):
@@ -53,14 +54,15 @@ class RecipeStep(BaseModel):
 
 
 class Recipe(BaseModel):
+    uuid: UUID
     name: str
     country: str | None
     difficulty: int
     views: int
     recipe_steps: list[RecipeStep]
-    model_config = ConfigDict(from_attributes=True)
     image_path: str
     cost: float
+    model_config = ConfigDict(from_attributes=True)
 
     @model_validator(mode="after")
     def validator(self):

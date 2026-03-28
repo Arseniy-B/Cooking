@@ -7,6 +7,13 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
+    command: >
+      sh -c "
+        docker-entrypoint.sh postgres &
+        until pg_isready -U postgres; do sleep 1; done;
+        psql -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS \"pg_trgm\";'
+        wait $$!
+      "
   redis:
     image: redis:latest
     ports:

@@ -4,6 +4,7 @@ from sqlalchemy import (
     String,
     Text,
     Index,
+    Uuid
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -12,6 +13,7 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship,
 )
+from uuid import UUID, uuid4
 
 
 class Base(DeclarativeBase):
@@ -22,6 +24,7 @@ class Base(DeclarativeBase):
         return cls.__name__.lower()
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+
 
 
 class Ingredient(Base):
@@ -45,6 +48,7 @@ class Ingredient(Base):
 
 
 class Recipe(Base):
+    uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), unique=True, index=True, default=uuid4)
     name: Mapped[str]
     country: Mapped[str]
     difficulty: Mapped[int]
@@ -106,6 +110,8 @@ class RecipeStepIngredient(Base):
 
 
 class User(Base):
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), unique=True, index=True, default=uuid4)
     username: Mapped[str] = mapped_column(String(length=255), nullable=False)
     hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
