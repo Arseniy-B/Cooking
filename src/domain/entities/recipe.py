@@ -75,6 +75,27 @@ class Recipe(BaseModel):
         return name.lower()
 
 
+class RecipeDisplay(BaseModel):
+    uuid: UUID
+    name: str
+    country: str | None
+    difficulty: int
+    views: int
+    image_path: str
+    cost: float
+    model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="after")
+    def validator(self):
+        if not (0 <= self.difficulty <= 5):
+            raise ValidationError(fields=["difficulty"])
+        return self
+
+    @field_serializer("name")
+    def name_serialize(self, name: str):
+        return name.lower()
+
+
 class RecipeSearch(BaseModel):
     name: str | None = None
     difficulty: int | None = None

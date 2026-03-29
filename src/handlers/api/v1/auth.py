@@ -11,7 +11,7 @@ router = APIRouter(prefix="/auth")
 @router.post("/sign_up")
 async def sign_up(UserLogin):
     auth = AuthAdapter()
-    auth.sign_up()
+    await auth.sign_up()
 
 @router.post("/login")
 async def sign_in():

@@ -1,12 +1,13 @@
 from typing import Annotated
 
 
-from fastapi import APIRouter, Body, Depends, File, Query, UploadFile
+from fastapi import APIRouter, Depends, Query
 
-from src.domain.entities.recipe import IngredientSearch, Recipe, RecipeSearch
+from src.domain.entities.recipe import IngredientSearch, Recipe, RecipeSearch, RecipeDisplay
 from src.domain.ports.recipe import RecipePort
 from src.infrastructure.adapters.recipe.adapter import RecipeAdapter
 from src.infrastructure.services.db.db import AsyncSession, db_helper
+from uuid import UUID
 
 router = APIRouter(prefix="/recipes")
 
@@ -27,9 +28,15 @@ async def find_suitable_recipe(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1),
     search: RecipeSearch = Depends(),
-) -> list[Recipe]:
+) -> list[RecipeDisplay]:
     recipes = await recipe_adapter.match_recipe(search, size=size, page=page)
     return recipes
+
+
+@router.get("/full")
+async def get_full_recipe(recipe_adapter: RecipeAdapterDep, recipe_uuid: UUID):
+    recipe: Recipe = await recipe_adapter.get_full_recipe(recipe_uuid)
+    return recipe
 
 
 @router.get("/ingredients")
