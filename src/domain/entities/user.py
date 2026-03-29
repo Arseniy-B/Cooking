@@ -11,11 +11,12 @@ class User(BaseModel):
     avatar_url: str | None
 
 
-class UserSignUp(BaseModel):
+class UserCreate(BaseModel):
     username: str
     password: str
 
 
 class UserLogin(BaseModel):
+    username: str
     password: str
-    password: str
+

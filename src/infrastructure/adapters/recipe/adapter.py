@@ -1,6 +1,8 @@
+from uuid import UUID
+
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import apaginate
-from sqlalchemy import Select, select, func, desc, asc
+from sqlalchemy import Select, asc, desc, func, select
 from sqlalchemy.orm import selectinload
 
 from src.domain.entities.recipe import Ingredient as IngredientSchema
@@ -15,7 +17,6 @@ from src.infrastructure.services.db.models import (
     RecipeStep,
     RecipeStepIngredient,
 )
-from uuid import UUID
 
 
 class RecipeAdapter(RecipePort):
@@ -55,7 +56,6 @@ class RecipeAdapter(RecipePort):
         recipe.views += 1
         await self.session.commit()
         return RecipeSchema.model_validate(recipe)
-
 
     def _get_main_stmt(self) -> Select:
         stmt = select(Recipe).options(
