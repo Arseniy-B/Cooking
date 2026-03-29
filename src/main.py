@@ -7,6 +7,8 @@ from fastapi_pagination import add_pagination
 from src.admin_setup import lifespan
 from src.config import MEDIA_DIR
 from src.handlers.api.v1.recipe import router as recipe_router
+from src.handlers.api.v1.backet import router as backet_router
+from src.handlers.api.v1.auth import router as auth_router
 
 
 app = FastAPI(lifespan=lifespan)
@@ -30,3 +32,5 @@ app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 app.mount("/admin", admin_app)
 add_pagination(app)
 app.include_router(recipe_router)
+app.include_router(backet_router)
+app.include_router(auth_router)

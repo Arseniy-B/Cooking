@@ -36,7 +36,7 @@ class AuthAdapter(AuthPort):
         return True
 
     async def login(self, user_login: UserLogin) -> bool:
-        stmt = select(User).where(UserModel.username == user_login.username)
+        stmt = select(UserModel).where(UserModel.username == user_login.username)
         ans = await self.session.execute(stmt)
         user = ans.scalar_one()
         if validate_password(user_login.password, user.hash_password):
@@ -56,6 +56,6 @@ class AuthAdapter(AuthPort):
         session_id = secrets.token_urlsafe(32)
         key = f"session:{session_id}"
         redis = await redis_helper.get_redis()
-        redis.set(key, str(user_uuid))
-        redis.expire(key, timedelta(minutes=ttl_minutes))
+        await redis.set(key, str(user_uuid))
+        await redis.expire(key, timedelta(minutes=ttl_minutes))
         return session_id
