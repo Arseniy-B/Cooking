@@ -1,25 +1,15 @@
-from typing import Annotated
-
-
 from fastapi import APIRouter, Depends, Query
 
-from src.domain.entities.recipe import IngredientSearch, Recipe, RecipeSearch, RecipeDisplay
-from src.domain.ports.recipe import RecipePort
-from src.infrastructure.adapters.recipe.adapter import RecipeAdapter
-from src.infrastructure.services.db.db import AsyncSession, db_helper
+from src.domain.entities.recipe import (
+    IngredientSearch,
+    Recipe,
+    RecipeSearch,
+    RecipeDisplay,
+)
 from uuid import UUID
+from src.handlers.api.v1.depends import RecipeAdapterDep
 
 router = APIRouter(prefix="/recipes")
-
-
-SessionDep = Annotated[AsyncSession, Depends(db_helper.get_session)]
-
-
-async def get_recipe_adapter(session: SessionDep) -> RecipePort:
-    return RecipeAdapter(session)
-
-
-RecipeAdapterDep = Annotated[RecipePort, Depends(get_recipe_adapter)]
 
 
 @router.get("/")
@@ -48,7 +38,5 @@ async def get_all_ingredients(
     return ingredients
 
 
-
 @router.get("/offers")
-async def get_current_offers():
-    ...
+async def get_current_offers(): ...

@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from src.domain.entities.user import User, UserCreate, UserLogin
+from uuid import UUID
 
 
 
 class AuthPort(ABC):
     @abstractmethod
-    async def is_authenticated(self) -> bool:pass
+    async def is_authenticated(self) -> UUID | None: pass
 
     @abstractmethod
     async def sign_up(self, user: UserCreate) -> bool: pass

@@ -109,6 +109,11 @@ class RecipeStepIngredient(Base):
         return f"{self.ingredient} + {self.recipe_step.__str__()}"
 
 
+class Backet(Base):
+    user_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("user.id"), index=True)
+    recipe_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("recipe.id"), index=True)
+
+
 class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), unique=True, index=True, default=uuid4)

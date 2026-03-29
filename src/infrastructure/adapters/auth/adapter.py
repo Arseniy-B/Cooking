@@ -18,12 +18,13 @@ class AuthAdapter(AuthPort):
         self.response = response
         self.session = session
 
-    async def is_authenticated(self) -> bool:
+    async def is_authenticated(self) -> UUID | None:
         redis = await redis_helper.get_redis()
         session_id = self.request.cookies.get("token") 
-        if redis.exists(f"session:{session_id}"):
-            return True
-        return False
+        user_uuid_str = await redis.get(f"session:{session_id}")
+        if not user_uuid_str:
+            return None
+        return UUID(user_uuid_str.decode())
 
     async def sign_up(self, user: UserCreate) -> bool:
         new_user = UserModel(
@@ -51,18 +52,10 @@ class AuthAdapter(AuthPort):
             return True
         return False
 
-    async def _create_new_token(self, user_uuid: UUID, extra_data: dict = {}, ttl_minutes: int = 60 * 24 * 7) -> str:
+    async def _create_new_token(self, user_uuid: UUID, ttl_minutes: int = 60 * 24 * 7) -> str:
         session_id = secrets.token_urlsafe(32)
-        session_data = {
-            "user_uuid": user_uuid,
-            "created_at": str(datetime.now(timezone.utc)),
-            "last_activity": str(datetime.now(timezone.utc)),
-            **extra_data
-        }
         key = f"session:{session_id}"
         redis = await redis_helper.get_redis()
-        redis.hset(key, mapping=session_data)
+        redis.set(key, str(user_uuid))
         redis.expire(key, timedelta(minutes=ttl_minutes))
         return session_id
-
-    

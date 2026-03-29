@@ -2,13 +2,18 @@ from uuid import UUID
 
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import apaginate
-from sqlalchemy import Select, asc, desc, func, select
+from sqlalchemy import Select, asc, desc, func, select, delete
 from sqlalchemy.orm import selectinload
 
-from src.domain.entities.recipe import Ingredient as IngredientSchema
-from src.domain.entities.recipe import IngredientSearch, RecipeSearch
-from src.domain.entities.recipe import Recipe as RecipeSchema
-from src.domain.entities.recipe import RecipeDisplay as RecipeDisplaySchema
+from src.domain.entities.recipe import (
+    Ingredient as IngredientSchema,
+    Recipe as RecipeSchema,
+    RecipeDisplay as RecipeDisplaySchema,
+)
+from src.domain.entities.recipe import (
+    IngredientSearch,
+    RecipeSearch,
+)
 from src.domain.ports.recipe import RecipePort
 from src.infrastructure.services.db.db import AsyncSession
 from src.infrastructure.services.db.models import (
@@ -16,12 +21,37 @@ from src.infrastructure.services.db.models import (
     Recipe,
     RecipeStep,
     RecipeStepIngredient,
+    Backet
 )
 
 
 class RecipeAdapter(RecipePort):
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    async def add_to_backet(self, recipe_uuid: UUID, user_uuid: UUID):
+        stmt = select(Recipe).where(Recipe.uuid == recipe_uuid)
+        res = await self.session.execute(stmt)
+        recipe = res.scalar_one_or_none()
+        if not recipe:
+            return None
+        backet = Backet(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
+        self.session.add(backet)
+        await self.session.commit()
+
+    async def remove_from_backet(self, recipe_uuid: UUID, user_uuid: UUID): 
+        stmt = select(Backet).where(Backet.recipe_uuid==recipe_uuid, Backet.user_uuid == user_uuid)
+        ans = await self.session.execute(stmt)
+        backet = ans.scalar_one_or_none()
+        if not backet:
+            return None
+        await self.session.delete(backet)
+        await self.session.commit()
+
+    async def get_user_backet(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplaySchema]: 
+        stmt = select(Recipe).join(Backet).where(Backet.user_uuid == user_uuid)
+        db_recipes = await apaginate(self.session, stmt, params=Params(page=page, size=size))
+        return [RecipeDisplaySchema.model_validate(i) for i in db_recipes]
 
     async def match_recipe(
         self, search: RecipeSearch, page: int = 1, size: int = 20
