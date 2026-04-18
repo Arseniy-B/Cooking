@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import apaginate
-from sqlalchemy import Select, asc, desc, func, select, delete
+from sqlalchemy import Select, asc, desc, func, select
 from sqlalchemy.orm import selectinload
 
 from src.domain.entities.recipe import (
@@ -21,37 +21,43 @@ from src.infrastructure.services.db.models import (
     Recipe,
     RecipeStep,
     RecipeStepIngredient,
-    Backet
+    Basket
 )
+from src.infrastructure.adapters.recipe.exceptions import BasketExistError, RecipeNotFoundError
 
 
 class RecipeAdapter(RecipePort):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def add_to_backet(self, recipe_uuid: UUID, user_uuid: UUID):
+    async def add_to_basket(self, recipe_uuid: UUID, user_uuid: UUID):
         stmt = select(Recipe).where(Recipe.uuid == recipe_uuid)
         res = await self.session.execute(stmt)
         recipe = res.scalar_one_or_none()
         if not recipe:
-            return None
-        backet = Backet(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
-        self.session.add(backet)
+            raise RecipeNotFoundError
+        stmt = select(Basket).where(Basket.user_uuid == user_uuid, Basket.recipe_uuid == recipe_uuid)
+        res = await self.session.execute(stmt)
+        exist_basket_recipe = res.scalar_one_or_none()
+        if exist_basket_recipe:
+            raise BasketExistError 
+        basket = Basket(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
+        self.session.add(basket)
         await self.session.commit()
 
-    async def remove_from_backet(self, recipe_uuid: UUID, user_uuid: UUID): 
-        stmt = select(Backet).where(Backet.recipe_uuid==recipe_uuid, Backet.user_uuid == user_uuid)
+    async def remove_from_basket(self, recipe_uuid: UUID, user_uuid: UUID): 
+        stmt = select(Basket).where(Basket.recipe_uuid==recipe_uuid, Basket.user_uuid == user_uuid)
         ans = await self.session.execute(stmt)
-        backet = ans.scalar_one_or_none()
-        if not backet:
+        basket = ans.scalar_one_or_none()
+        if not basket:
             return None
-        await self.session.delete(backet)
+        await self.session.delete(basket)
         await self.session.commit()
 
-    async def get_user_backet(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplaySchema]: 
-        stmt = select(Recipe).join(Backet).where(Backet.user_uuid == user_uuid)
+    async def get_user_basket(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplaySchema]: 
+        stmt = select(Recipe).join(Basket).where(Basket.user_uuid == user_uuid)
         db_recipes = await apaginate(self.session, stmt, params=Params(page=page, size=size))
-        return [RecipeDisplaySchema.model_validate(i) for i in db_recipes]
+        return [RecipeDisplaySchema.model_validate(i.__dict__) for i in db_recipes.items]
 
     async def match_recipe(
         self, search: RecipeSearch, page: int = 1, size: int = 20

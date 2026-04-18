@@ -27,6 +27,10 @@ class AuthAdapter(AuthPort):
         return UUID(user_uuid_str.decode())
 
     async def sign_up(self, user: UserCreate) -> bool:
+        ans = await self.session.execute(select(UserModel).where(UserModel.username==user.username))
+        exists_user = ans.scalar_one_or_none()
+        if exists_user:
+            return False
         new_user = UserModel(
             username=user.username,
             hash_password=hash_password(user.password)
@@ -59,3 +63,13 @@ class AuthAdapter(AuthPort):
         await redis.set(key, str(user_uuid))
         await redis.expire(key, timedelta(minutes=ttl_minutes))
         return session_id
+
+    async def logout(self) -> bool: 
+        self.response.delete_cookie(
+            key="token",
+            httponly=True,
+            secure=True,
+            samesite="lax",
+        )
+        return True
+

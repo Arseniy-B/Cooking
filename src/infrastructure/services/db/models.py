@@ -109,9 +109,9 @@ class RecipeStepIngredient(Base):
         return f"{self.ingredient} + {self.recipe_step.__str__()}"
 
 
-class Backet(Base):
-    user_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("user.uuid"), index=True)
-    recipe_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("recipe.uuid"), index=True)
+class Basket(Base):
+    user_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("user.uuid", ondelete="CASCADE"), index=True)
+    recipe_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("recipe.uuid", ondelete="CASCADE"), index=True)
 
 
 class User(Base):

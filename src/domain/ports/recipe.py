@@ -14,11 +14,11 @@ class RecipePort(ABC):
     async def get_ingredients(self, search: IngredientSearch) -> list[Ingredient]: pass
 
     @abstractmethod
-    async def add_to_backet(self, recipe_uuid: UUID, user_uuid: UUID): pass
+    async def add_to_basket(self, recipe_uuid: UUID, user_uuid: UUID): pass
 
     @abstractmethod
-    async def remove_from_backet(self, recipe_uuid: UUID, user_uuid: UUID): pass
+    async def remove_from_basket(self, recipe_uuid: UUID, user_uuid: UUID): pass
 
     @abstractmethod
-    async def get_user_backet(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplay]: pass 
+    async def get_user_basket(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplay]: pass 
 
