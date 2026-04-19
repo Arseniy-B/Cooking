@@ -10,6 +10,8 @@ MEDIA_DIR = BASE_DIR / "src" / "media"
 MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 RECIPES_MEDIA_DIR = MEDIA_DIR / "recipes"
 RECIPES_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+USERS_MEDIA_DIR = MEDIA_DIR / "users"
+USERS_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class PostgresSettings(BaseSettings):
@@ -23,8 +25,8 @@ class PostgresSettings(BaseSettings):
 
     @property
     def DATABASE_URL(self):
-        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-
+        url = f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@/{self.DB_NAME}?host={self.DB_HOST}&port={self.DB_PORT}"
+        return url
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="allow")
 
 
