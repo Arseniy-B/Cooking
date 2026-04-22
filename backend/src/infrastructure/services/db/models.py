@@ -26,6 +26,26 @@ class Base(DeclarativeBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
 
+class Tag(Base):
+    name: Mapped[str] = mapped_column(unique=True)
+
+    __table_args__ = (
+        Index(
+            "ix_tag_name_trgm",
+            "name",
+            postgresql_using="gin",
+            postgresql_ops={"name": "gin_trgm_ops"},
+        ),
+    )
+
+
+class TagRecipe(Base):
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tag.id", ondelete="CASCADE"), index=True)
+    recipe_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("recipe.uuid", ondelete="CASCADE"), index=True)
+
+    recipe = relationship("Recipe", back_populates="recipe_tags")
+    tag = relationship("Tag")
+
 
 class Ingredient(Base):
     name: Mapped[str] = mapped_column(unique=True)
@@ -58,6 +78,9 @@ class Recipe(Base):
 
     recipe_steps = relationship(
         "RecipeStep", back_populates="recipe", cascade="all, delete-orphan"
+    )
+    recipe_tags = relationship(
+        "TagRecipe", back_populates="recipe", cascade="all, delete-orphan"
     )
 
     __table_args__ = (

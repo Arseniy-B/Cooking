@@ -32,6 +32,11 @@ class Ingredient(BaseModel):
         return name.lower()
 
 
+class Tag(BaseModel):
+    name: str
+    model_config = ConfigDict(from_attributes=True)
+
+
 class RecipeStepIngredient(BaseModel):
     ingredient: Ingredient
     quantity: float
@@ -60,6 +65,7 @@ class Recipe(BaseModel):
     difficulty: int
     views: int
     recipe_steps: list[RecipeStep]
+    tags: list[Tag]
     image_path: str
     cost: float
     model_config = ConfigDict(from_attributes=True)
@@ -106,6 +112,11 @@ class RecipeSearch(BaseModel):
     cost: bool | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class Search(BaseModel):
+    recipe_search: RecipeSearch
+    tags: list[str] | None = None
 
 
 class IngredientSearch(BaseModel):

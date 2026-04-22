@@ -1,4 +1,5 @@
 from uuid import UUID
+from typing import Sequence
 
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import apaginate
@@ -13,6 +14,7 @@ from src.domain.entities.recipe import (
 from src.domain.entities.recipe import (
     IngredientSearch,
     RecipeSearch,
+    Tag as TagsSchema
 )
 from src.domain.ports.recipe import RecipePort
 from src.infrastructure.services.db.db import AsyncSession
@@ -21,7 +23,8 @@ from src.infrastructure.services.db.models import (
     Recipe,
     RecipeStep,
     RecipeStepIngredient,
-    Basket
+    Basket,
+    Tag
 )
 from src.infrastructure.adapters.recipe.exceptions import BasketExistError, RecipeNotFoundError
 
@@ -60,7 +63,7 @@ class RecipeAdapter(RecipePort):
         return [RecipeDisplaySchema.model_validate(i.__dict__) for i in db_recipes.items]
 
     async def match_recipe(
-        self, search: RecipeSearch, page: int = 1, size: int = 20
+        self, search: RecipeSearch, tags: list[str] | None = None, page: int = 1, size: int = 20
     ) -> list[RecipeDisplaySchema]:
         stmt = select(Recipe)
         order_by_classes = []
@@ -75,6 +78,8 @@ class RecipeAdapter(RecipePort):
             order_by_classes.append(
                 desc(Recipe.cost) if search.cost else asc(Recipe.cost)
             )
+        if tags:
+            stmt = stmt.where(Recipe.recipe_tags.tag.in_(tags))
 
         if order_by_classes:
             stmt = stmt.order_by(*order_by_classes)
@@ -118,3 +123,20 @@ class RecipeAdapter(RecipePort):
             IngredientSchema.model_validate(i.__dict__) for i in db_ingredients.items
         ]
         return ingredients
+
+    async def get_tag(self, name: str) -> list[TagsSchema]: 
+        stmt = (
+            select(Tag)
+            .where(Tag.name.op("%")(name))
+            .order_by(func.similarity(Tag.name, name).desc())
+        )
+        ans = await self.session.execute(stmt)
+        tags = ans.scalars()
+        return [TagsSchema.model_validate(i.__dict__) for i in tags]
+
+
+
+
+
+
+
