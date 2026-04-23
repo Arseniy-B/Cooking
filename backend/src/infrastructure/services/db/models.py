@@ -79,9 +79,7 @@ class Recipe(Base):
     recipe_steps = relationship(
         "RecipeStep", back_populates="recipe", cascade="all, delete-orphan"
     )
-    recipe_tags = relationship(
-        "TagRecipe", back_populates="recipe", cascade="all, delete-orphan"
-    )
+    recipe_tags = relationship("TagRecipe")
 
     __table_args__ = (
         Index(

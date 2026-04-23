@@ -24,7 +24,8 @@ from src.infrastructure.services.db.models import (
     RecipeStep,
     RecipeStepIngredient,
     Basket,
-    Tag
+    Tag,
+    TagRecipe
 )
 from src.infrastructure.adapters.recipe.exceptions import BasketExistError, RecipeNotFoundError
 
@@ -79,7 +80,7 @@ class RecipeAdapter(RecipePort):
                 desc(Recipe.cost) if search.cost else asc(Recipe.cost)
             )
         if tags:
-            stmt = stmt.where(Recipe.recipe_tags.tag.in_(tags))
+            stmt = stmt.where(Recipe.recipe_tags.any(TagRecipe.tag.has(Tag.name.in_(tags))))
 
         if order_by_classes:
             stmt = stmt.order_by(*order_by_classes)
