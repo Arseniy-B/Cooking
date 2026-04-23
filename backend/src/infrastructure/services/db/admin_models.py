@@ -64,10 +64,8 @@ class TagAdmin(IntegerPKAdmin):
 
 @register(TagRecipe, sqlalchemy_sessionmaker=db_helper.session_factory)
 class TagRecipeAdmin(IntegerPKAdmin):
-    list_display = ("id", "recipe_uuid", "tag_id")
-    list_display_links = ("id", "recipe_uuid", "tag_id")
-    list_filter = ("id", "recipe_uuid", "tag_id")
-    search_fields = ("id", "recipe_uuid", "tag_id")
+    list_display = "__all__"
+
 
 @register(Ingredient, sqlalchemy_sessionmaker=db_helper.session_factory)
 class IngredientAdmin(IntegerPKAdmin):

@@ -1,5 +1,4 @@
 from uuid import UUID
-from typing import Sequence
 
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import apaginate

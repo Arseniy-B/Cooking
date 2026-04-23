@@ -29,6 +29,8 @@ class Base(DeclarativeBase):
 class Tag(Base):
     name: Mapped[str] = mapped_column(unique=True)
 
+    tag_recipe = relationship("TagRecipe", back_populates="tag")
+
     __table_args__ = (
         Index(
             "ix_tag_name_trgm",
@@ -41,10 +43,10 @@ class Tag(Base):
 
 class TagRecipe(Base):
     tag_id: Mapped[int] = mapped_column(ForeignKey("tag.id", ondelete="CASCADE"), index=True)
-    recipe_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("recipe.uuid", ondelete="CASCADE"), index=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete="CASCADE"), index=True)
 
     recipe = relationship("Recipe", back_populates="recipe_tags")
-    tag = relationship("Tag")
+    tag = relationship("Tag", back_populates="tag_recipe")
 
 
 class Ingredient(Base):
