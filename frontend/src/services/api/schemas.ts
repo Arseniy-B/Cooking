@@ -19,12 +19,18 @@ export interface RecipeStep {
   ingredients: RecipeStepIngredient[]
 }
 
+export interface Tag {
+  id: number
+  name: string
+}
+
 export interface Recipe {
   uuid: string
   name: string
   country?: string | null
   difficulty: number
   views: number
+  tags: Tag[]
   recipe_steps: RecipeStep[]
   image_path: string
   cost: number

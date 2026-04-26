@@ -4,6 +4,7 @@ import SimpleCard from "@/components/simple_card"
 import HorizontalScroll from "@/components/horizontal_scroll"
 import CurrentOffers from "@/components/current_offers"
 import MainImage from "@/assets/main.webp"
+import SecondImage from "@/assets/secondary.png"
 import { useSpring, animated, useInView, useScroll } from "@react-spring/web"
 import { Button } from "@/components/ui/button"
 import type { Recipe, RecipeSearch } from "@/services/api/schemas"
@@ -20,12 +21,25 @@ export default function Home(){
     name: `Recipe ${i + 1}`,
     country: null,
     difficulty: 0,
+    tags: [],
     views: 0,
     recipe_steps: [],
     image_path: "",
     cost: 0,
   })));
+  const [freeRecipes, setFreeRecipes] = useState<Recipe[]>(Array.from({ length: 8 }, (_, i) => ({
+    uuid: "",
+    name: `Recipe ${i + 1}`,
+    country: null,
+    difficulty: 0,
+    tags: [],
+    views: 0,
+    recipe_steps: [],
+    image_path: "",
+    cost: 0,
+  })))
   const [loaded, setLoaded] = useState(false)
+  const [loadedSecond, setLoadedSecond] = useState(false)
   const { scrollYProgress } = useScroll()
   const [ref, inView] = useInView()
   const [activeSection, setActiveSection] = useState('home');
@@ -51,9 +65,14 @@ export default function Home(){
   
   async function init_recipes(){
     const popular_search: RecipeSearch = {popular: true, size: 6}
-    get_suitable_recipe(popular_search)
+    await get_suitable_recipe(popular_search)
     .then((ans) => {
       setPopularRecipes(ans.data);
+    })
+    const free_search: RecipeSearch = {cost: false}
+    await get_suitable_recipe(free_search)
+    .then((ans) => {
+      setFreeRecipes(ans.data);
     })
   }
   useEffect(() => {
@@ -61,8 +80,7 @@ export default function Home(){
   }, [])
 
   const appearanceLeft = useSpring({
-    from: { x: -1000 },
-    to: { x: 0 },
+    transform: loadedSecond ? "translateX(0px)" : "translateX(-40px)",
     delay: 500,
     config: { tension: 100, mass: 2},
   })
@@ -79,6 +97,19 @@ export default function Home(){
     config: { tension: 120, friction: 20 },
     delay: 100
   })
+
+  const imageAnim = useSpring({
+    opacity: loadedSecond ? 1 : 0,
+    transform: loadedSecond ? "scale(1)" : "scale(1.05)",
+    config: { tension: 120, friction: 20 }
+  });
+
+  const textAnim = useSpring({
+    opacity: loadedSecond ? 1 : 0,
+    transform: loadedSecond ? "translateX(0px)" : "translateX(40px)",
+    delay: 200
+  });
+
 
   return (
     <>
@@ -104,8 +135,6 @@ export default function Home(){
               <p className="leading-[1.2] text-[2rem] md:text-[3rem] lg:text-[5rem]
                 text-2xl font-bold
                 transition-all duration-300
-                hover:-translate-y-1
-                hover:drop-shadow-[0_4px_6px_rgba(0,0,0,0.4)]
               ">Вы знаете что приготовить?</p>
               <p className="lg:text-[1.2rem] text-gray-500">На этом сайте вы сможете найти рецепты на любой вкус и бюджет. Сохраните свое время и ешьте то, что вам нравиться</p>
               <SearchInput />
@@ -125,7 +154,7 @@ export default function Home(){
           <div className="absolute h-full w-full flex items-center justify-center lg:pl-[10vw]">
             <div className="w-[50vw] lg:w-[20vw] lg:px-2 lg:py-10 rounded-[10px] backdrop-blur-[1px] ">
               <animated.div ref={ref} style={appearanceRight}>
-              <CurrentOffers/>
+                <CurrentOffers/>
               </animated.div>
             </div>
           </div>
@@ -150,23 +179,44 @@ export default function Home(){
         </div>
       </section>
 
-      <section className="min-h-[80vh] bg-red-800 flex flex-col lg:flex-row">
-        <div className="flex justify-center lg:ml-[20vw] m-auto">
-          <div className="bg-white w-50 h-50 lg:w-[30vw] lg:h-[30vw] rounded-full"></div>
+      <section className="min-h-[80vh] w-full bg-red-800 flex flex-col lg:flex-row justify-center">
+        <div className="relative w-full lg:w-1/2 h-[40vh] lg:h-auto overflow-hidden">
+          <animated.img
+            src={SecondImage}
+            alt="DimSum"
+            className="w-full h-full object-cover"
+            style={imageAnim}
+            onLoad={(e) =>
+              e.currentTarget.decode?.().then(() => setLoadedSecond(true))
+            }
+          />
         </div>
-        <div className="text-white grid grid-cols-1 grid-rows-[auto_auto_70px_auto] m-auto gap-1 p-[10vw]">
-          <p className="text-[1.5rem] lg:text-[2.5rem]">Димсамы</p>
-          <div className="bg-white w-30 lg:w-50 h-px"></div>
-          <p className="m-auto">Дальние родственники вареников и хенкалей</p>
-          <button className="bg-orange-400 w-30 lg:w-[12vw] rounded-[5px] p-3">В корзину</button>
-        </div>
+        <animated.div
+          style={textAnim}
+          className="w-full lg:w-1/3 text-white flex flex-col justify-center px-8 lg:px-16 py-10 gap-4"
+        >
+          <h2 className="text-3xl lg:text-5xl font-semibold">
+            Димсамы
+          </h2>
+
+          <div className="bg-white w-20 lg:w-32 h-0.5" />
+
+          <p className="text-sm lg:text-lg opacity-90 max-w-md">
+            Маленькие, сочные и насыщенные вкусом. Дальние родственники вареников и хинкали,
+            пришедшие из китайской кухни.
+          </p>
+
+          <button className="mt-4 bg-orange-400 hover:bg-orange-500 transition w-36 lg:w-48 rounded-md py-3 text-black font-medium">
+            В корзину
+          </button>
+        </animated.div>
       </section>
-      <section id="free" className="min-h-screen pt-[10vh] pd-[10vh] bg-white">
+      <section id="free" className="min-h-screen w-full py-[15vh]">
         <div className="grid place-items-center">
           <p className="intile-block text-[1.5rem] lg:text-[2.5rem]">Бесплатные рецепты</p>
           <div className="bg-red-800 w-37.5 lg:w-[17vw] h-px"></div>
         </div>
-        <HorizontalScroll/>
+        <HorizontalScroll recipes={freeRecipes}/>
       </section>
     </>
   )

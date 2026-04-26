@@ -5,8 +5,9 @@ import { useState } from "react"
 import { useSpring, animated } from "@react-spring/web"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { BASE_URL } from "@/services/api/handlers"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart, Eye } from "lucide-react"
 import { useContext } from "react"
 import { BasketContext, BasketChangesContext } from "@/services/contexts"
 
@@ -57,9 +58,18 @@ const SimpleCard: React.FC<RecipeProps> = ({recipe}) => {
           />
         )}
       </div> 
-      <div className="p-2 h-[40%]">
-        <div className="h-[80%]">
+      <div className="p-2 h-[40%] flex flex-col justify-between">
+        <div className="flex justify-between">
           <p>{recipe.name}</p>
+          <div className="flex justify-center items-center gap-1">
+            <p className="text-sm leading-none font-medium">{recipe.views}</p>
+            <Eye size={15}/>
+          </div>
+        </div>
+        <div>
+         {recipe.tags && recipe.tags.map((value, i) => (
+           <Badge key={i} variant="outline" className="rounded-[5px]">{value.name}</Badge>
+         ))}
         </div>
         <div className="flex justify-between">
           <Button variant="secondary" size="lg" className="w-[50%] rounded-[5px]">Купить</Button>
