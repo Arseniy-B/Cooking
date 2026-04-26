@@ -53,7 +53,7 @@ class RecipeAdapter(RecipePort):
         ans = await self.session.execute(stmt)
         basket = ans.scalar_one_or_none()
         if not basket:
-            return None
+            raise RecipeNotFoundError
         await self.session.delete(basket)
         await self.session.commit()
 
@@ -65,7 +65,9 @@ class RecipeAdapter(RecipePort):
     async def match_recipe(
         self, search: RecipeSearch, tags: list[str] | None = None, page: int = 1, size: int = 20
     ) -> list[RecipeDisplaySchema]:
-        stmt = select(Recipe)
+        stmt = select(Recipe).options(
+            selectinload(Recipe.tags)
+        )
         order_by_classes = []
         if search.name:
             stmt = stmt.where(Recipe.name.ilike(f"%{search.name}%"))
@@ -79,7 +81,7 @@ class RecipeAdapter(RecipePort):
                 desc(Recipe.cost) if search.cost else asc(Recipe.cost)
             )
         if tags:
-            stmt = stmt.where(Recipe.recipe_tags.any(TagRecipe.tag.has(Tag.name.in_(tags))))
+            stmt = stmt.where(Recipe.tags.any(Tag.name.in_(tags)))
 
         if order_by_classes:
             stmt = stmt.order_by(*order_by_classes)
@@ -87,7 +89,7 @@ class RecipeAdapter(RecipePort):
             self.session, stmt, params=Params(page=page, size=size)
         )
         return [
-            RecipeDisplaySchema.model_validate(recipe) for recipe in db_recipes.items
+            RecipeDisplaySchema.model_validate(recipe.__dict__) for recipe in db_recipes.items
         ]
 
     async def get_full_recipe(self, recipe_uuid: UUID) -> RecipeSchema:

@@ -33,6 +33,7 @@ class Ingredient(BaseModel):
 
 
 class Tag(BaseModel):
+    id: int
     name: str
     model_config = ConfigDict(from_attributes=True)
 
@@ -87,6 +88,7 @@ class RecipeDisplay(BaseModel):
     country: str | None
     difficulty: int
     views: int
+    tags: list[Tag] | None = None
     image_path: str
     cost: float
     model_config = ConfigDict(from_attributes=True)

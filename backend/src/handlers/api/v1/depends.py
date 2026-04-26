@@ -23,4 +23,4 @@ async def get_auth_adapter(
     return AuthAdapter(session, request, response)
 
 
-AuthAdapterDep = Annotated[AuthAdapter, Depends(get_auth_adapter)]
+AuthAdapterDep = Annotated[AuthPort, Depends(get_auth_adapter)]

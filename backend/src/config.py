@@ -15,11 +15,11 @@ USERS_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class PostgresSettings(BaseSettings):
-    DB_HOST: str
-    DB_PORT: str
-    DB_USER: str
-    DB_PASS: str
-    DB_NAME: str
+    DB_HOST: str = "localhost"
+    DB_PORT: str = "5432"
+    DB_USER: str = "user"
+    DB_PASS: str = "password"
+    DB_NAME: str = "name"
 
     db_echo: bool = False
 
@@ -31,8 +31,8 @@ class PostgresSettings(BaseSettings):
 
 
 class RedisSettings(BaseSettings):
-    REDIS_HOST: str
-    REDIS_PORT: str
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: str = "6379"
 
     @property
     def get_url(self):
@@ -42,15 +42,15 @@ class RedisSettings(BaseSettings):
 
 
 class AdminPanel(BaseSettings):
-    ADMIN_PASSWORD: str
-    ADMIN_USERNAME: str
+    ADMIN_PASSWORD: str = "admin"
+    ADMIN_USERNAME: str = "admin"
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="allow")
 
 
 class Config(BaseModel):
-    db: PostgresSettings = PostgresSettings()  # pyright: ignore
-    admin_panel: AdminPanel = AdminPanel()  # pyright: ignore
-    redis: RedisSettings = RedisSettings() # pyright: ignore
+    db: PostgresSettings = PostgresSettings()
+    admin_panel: AdminPanel = AdminPanel()
+    redis: RedisSettings = RedisSettings()
 
 
 config = Config()

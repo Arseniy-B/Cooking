@@ -29,7 +29,7 @@ class Base(DeclarativeBase):
 class Tag(Base):
     name: Mapped[str] = mapped_column(unique=True)
 
-    tag_recipe = relationship("TagRecipe", back_populates="tag")
+    recipes = relationship("Recipe", secondary="tagrecipe", back_populates="tags")
 
     __table_args__ = (
         Index(
@@ -39,14 +39,14 @@ class Tag(Base):
             postgresql_ops={"name": "gin_trgm_ops"},
         ),
     )
+    def __str__(self):
+        return self.name
+
 
 
 class TagRecipe(Base):
     tag_id: Mapped[int] = mapped_column(ForeignKey("tag.id", ondelete="CASCADE"), index=True)
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete="CASCADE"), index=True)
-
-    recipe = relationship("Recipe", back_populates="recipe_tags")
-    tag = relationship("Tag", back_populates="tag_recipe")
 
 
 class Ingredient(Base):
@@ -81,7 +81,7 @@ class Recipe(Base):
     recipe_steps = relationship(
         "RecipeStep", back_populates="recipe", cascade="all, delete-orphan"
     )
-    recipe_tags = relationship("TagRecipe")
+    tags = relationship("Tag", secondary="tagrecipe", back_populates="recipes")
 
     __table_args__ = (
         Index(

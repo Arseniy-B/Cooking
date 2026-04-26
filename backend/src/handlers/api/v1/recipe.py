@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, Body
+from fastapi import APIRouter, Query, Body
 
 from src.domain.entities.recipe import (
     IngredientSearch,
