@@ -80,8 +80,9 @@ export default function Home(){
   }, [])
 
   const appearanceLeft = useSpring({
-    transform: loadedSecond ? "translateX(0px)" : "translateX(-40px)",
-    delay: 500,
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+    delay: 200,
     config: { tension: 100, mass: 2},
   })
 

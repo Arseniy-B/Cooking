@@ -30,7 +30,7 @@ export interface Recipe {
   country?: string | null
   difficulty: number
   views: number
-  tags: Tag[]
+  tags: Tag[] | null
   recipe_steps: RecipeStep[]
   image_path: string
   cost: number

@@ -17,6 +17,7 @@ export default function Search(){
     name: "",
     country: null,
     difficulty: 0,
+    tags: [],
     views: 0,
     recipe_steps: [],
     image_path: "",
@@ -26,6 +27,17 @@ export default function Search(){
   const [search, setSearch] = useState<RecipeSearch>({})
   const [tags, setTags] = useState<string[]>([])
   const { scrollY } = useScroll();
+  const [isLg, setIsLg] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)")
+
+    const update = () => setIsLg(mq.matches)
+    update()
+
+    mq.addEventListener("change", update)
+    return () => mq.removeEventListener("change", update)
+  }, [])
 
   const y = scrollY.to(scroll => scroll);
 
@@ -55,8 +67,8 @@ export default function Search(){
   return (
     <>
       <Header></Header>
-      <section className="min-h-screen w-full grid lg:grid-cols-[40%_auto] overflow-hidden">
-        <animated.div style={{ transform: y.to(y => `translateY(${y}px)`) }}>
+      <section className="min-h-screen w-full lg:grid lg:grid-cols-[34%_auto] overflow-hidden">
+        <animated.div style={{ transform: isLg ? y.to(y => `translateY(${y}px)`) : ""}}>
           <div className="flex flex-col justify-center mt-30 items-center px-[20%]">
             <div className="flex w-full justify-center">
               <InputGroup className="rounded-[5px]">
@@ -70,12 +82,12 @@ export default function Search(){
           </div>
         </animated.div>
         <div className="my-20">
-          <div className="mb-5">
+          <div className="flex justify-center lg:justify-normal mb-5">
             {Object.keys(search).length > 0 && (
               <SearchFilters search={search} setSearch={setSearch}/>    
             )}
           </div>
-          <div className="flex flex-wrap gap-5">
+          <div className="flex flex-wrap justify-center lg:justify-normal gap-5">
             {recipes.map((value, i) => (
               <SimpleCard key={i} recipe={value}/>
             ))}

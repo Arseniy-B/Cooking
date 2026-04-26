@@ -11,6 +11,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { BASE_URL } from "@/services/api/handlers"
+import BasketButton from "@/components/basket_button"
 
 
 function VerticalCard({recipe}: {recipe: Recipe}) {
@@ -20,15 +21,22 @@ function VerticalCard({recipe}: {recipe: Recipe}) {
     config: { tension: 120, friction: 20 }
   })
   return (
-    <div className="rounded-[5px] relative h-full">
+    <div className="rounded-[5px] relative h-full group">
       {!loaded && (
-        <Skeleton className="h-full w-full rounded-[5px]">
-        </Skeleton>
+        <Skeleton className="h-full w-full rounded-[5px]" />
       )}
+    
       {recipe.image_path && (
         <animated.img 
           src={BASE_URL + recipe.image_path} 
-          className={`${loaded? "w-full h-full" : ""} object-cover lg:object-right pointer-none rounded-[5px]`}
+          className={`
+            ${loaded ? "w-full h-full" : ""}
+            object-cover lg:object-right
+            pointer-events-none
+            rounded-[5px]
+            transition-transform duration-300
+            group-hover:scale-105
+          `}
           onLoad={(e) => {
             e.currentTarget.decode?.().then(() => {
               setLoaded(true)
@@ -37,16 +45,17 @@ function VerticalCard({recipe}: {recipe: Recipe}) {
           style={imageLoaded}
         />
       )}
-      <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"></div>
-      <div className="z-100 absolute bottom-1 text-white">
-        <div className="h-[30%] p-5">
+      <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent pointer-events-none transition-transform duration-300 group-hover:scale-105"></div>
+      <div className="absolute bottom-1 text-white z-10 w-full flex justify-between p-5">
+        <div>
           {recipe.name} 
           <div className="flex flex-wrap">
-          {recipe.tags && recipe.tags.map((value, i)=> (
-            <Badge key={i} variant="ghost">{value.name}</Badge>
-          ))}
+            {recipe.tags?.map((value, i)=> (
+              <Badge key={i} variant="ghost">{value.name}</Badge>
+            ))}
           </div>
         </div>
+        <BasketButton recipe={recipe}/>
       </div>
     </div>
   )
