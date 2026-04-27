@@ -1,58 +1,69 @@
-import { useState } from "react"
-import type {Recipe} from "@/services/api/schemas" 
+import { useState, useContext, useCallback } from "react"
+import type { Recipe } from "@/services/api/schemas"
 import { useSpring, animated } from "@react-spring/web"
 import { Button } from "@/components/ui/button"
 import { BASE_URL, remove_from_basket } from "@/services/api/handlers"
 import { Delete } from "lucide-react"
-import { useContext } from "react"
-import { BasketContext } from "@/services/contexts"
+import { BasketContext, type BasketContextType } from "@/services/contexts"
 
-
-interface LargeCardProps{
+interface LargeCardProps {
   recipe: Recipe
 }
 
-export default function LargeCard(props: LargeCardProps){
+export default function LargeCard({ recipe }: LargeCardProps) {
   const [loaded, setLoaded] = useState(false)
-  const {basketRecipes, setBasketRecipes} = useContext(BasketContext)!;
+  const basketCtx = useContext(BasketContext) as BasketContextType
 
-  const imageLoaded = useSpring({
+  const imageAnim = useSpring({
     opacity: loaded ? 1 : 0,
     config: { tension: 120, friction: 20 }
   })
 
-  const deleteBasketRecipe = async () => {
-    await remove_from_basket(props.recipe.uuid)
-    .then(() => {
-      setBasketRecipes([...basketRecipes.filter(r=>r.uuid !== props.recipe.uuid)])
-    })
-  }
+  const deleteBasketRecipe = useCallback(async () => {
+    await remove_from_basket(recipe.uuid)
+
+    basketCtx?.setBasketRecipes(prev =>
+      prev.filter(r => r.uuid !== recipe.uuid)
+    )
+  }, [basketCtx, recipe.uuid])
 
   return (
-    <div className="w-full p-5 mb-5 lg:p-0 lg:w-[60vw] h-[40vh]">
-      <div className="h-px bg-red-800 w-full"></div>
-      <div className="py-10 w-full h-full flex">
-        <div className="h-full w-[60%] flex border rounded-[5px]">
-          <animated.img 
-            src={BASE_URL + props.recipe.image_path} 
-            className={`${loaded? "h-full" : ""} p-2 object-cover lg:object-right pointer-none rounded-[10px] w-[50%]`}
+    <div className="w-full lg:w-[60vw] p-5 lg:p-0 mb-5">
+      
+      <div className="h-px bg-red-800 w-full mb-6" />
+
+      <div className="flex gap-6 h-[40vh]">
+
+        {/* IMAGE */}
+        <div className="w-1/2 border rounded-md overflow-hidden">
+          <animated.img
+            src={BASE_URL + recipe.image_path}
+            className="w-full h-full object-cover pointer-events-none"
+            style={imageAnim}
             onLoad={(e) => {
-              e.currentTarget.decode?.().then(() => {
-                setLoaded(true)
-              })
+              e.currentTarget.decode?.().then(() => setLoaded(true))
             }}
-            style={imageLoaded}
           />
-          <div className="flex flex-col justify-between w-full">
-            <div className="w-full h-full p-2">
-              {props.recipe.name}
-            </div>
-            <div className="flex justify-end w-full">
-              <Button variant="ghost" onClick={deleteBasketRecipe}><Delete/></Button>
-            </div>
-          </div>
         </div>
-        <div className="w-[50%]"></div>
+
+        {/* CONTENT */}
+        <div className="w-1/2 flex flex-col justify-between">
+          
+          <div className="text-lg font-medium">
+            {recipe.name}
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              onClick={deleteBasketRecipe}
+              className="hover:text-red-500 transition"
+            >
+              <Delete />
+            </Button>
+          </div>
+
+        </div>
       </div>
     </div>
   )

@@ -13,3 +13,8 @@ export const BasketContext = createContext<
 export const BasketChangesContext = createContext<
   {basketChanges: number; setBasketChanges: (basketChanges: number) => void} | null
 >(null);
+
+export type BasketContextType = {
+  basketRecipes: Recipe[]
+  setBasketRecipes: React.Dispatch<React.SetStateAction<Recipe[]>>
+}

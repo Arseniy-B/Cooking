@@ -93,7 +93,7 @@ export default function Home(){
     config: { tension: 500, friction: 100, mass: 1, },
   })
   const imageLoaded = useSpring({
-    transform: loaded ? scrollYProgress.to(p => `rotate(${p * 90}deg) translateX(${-p * 900}px)`) : "translateX(-100px)",
+    transform: loaded ? scrollYProgress.to(p => `rotate(${p * 90}deg) translateX(${-p * 900}px)`) : "translateX(0px)",
     opacity: loaded ? 1 : 0,
     config: { tension: 120, friction: 20 },
     delay: 100

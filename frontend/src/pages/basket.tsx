@@ -7,7 +7,22 @@ import { useContext } from "react"
 import { BasketContext } from "@/services/contexts"
 import LargeCard from "@/components/large_card"
 import {Button} from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { useNavigate } from "react-router-dom"
+
+
+const DottedRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-baseline gap-2 w-full">
+    <span className="text-sm font-medium whitespace-nowrap">{label}</span>
+
+    <div className="flex-1 h-[2px]
+      bg-[radial-gradient(circle,_#1f2937_1.5px,_transparent_1.5px)]
+      bg-[length:6px_2px] translate-y-[-2px]" 
+    />
+
+    <span className="text-sm font-semibold whitespace-nowrap">{value}</span>
+  </div>
+)
 
 
 export default function Basket(){
@@ -17,22 +32,21 @@ export default function Basket(){
   const { scrollYProgress } = useScroll()
 
   const imageLoaded = useSpring({
-    transform: loaded ? scrollYProgress.to(p => `rotate(${p * 100}deg) translateX(${-p * 900}px)`) : "translateX(-900px)",
+    transform: loaded ? scrollYProgress.to(p => `rotate(${p * 50}deg) translateX(${-p * 500}px)`) : "translateX(-100px)",
     config: { tension: 120, friction: 20 },
-    delay: 100
   })
 
   return (
     <>
       <Header></Header>
-      <section className="w-full h-screen pt-15 lg:pt-0 lg:grid lg:grid-cols-[400px_30vw_auto]">
-        <div className="bg-red-800 flex justify-center items-center p-10">
+      <section className="w-full min-h-screen pt-15 lg:pt-0 grid grid-rows-[60vh_20vh_20vh] lg:grid-rows-1 grid-cols-1 lg:grid-cols-[400px_25vw_auto]">
+        <div className="order-3 lg:order-1 bg-red-800 flex justify-center items-center p-10">
           <CurrentOffers/>
         </div>
-        <div className="overflow-hidden relative">
+        <div className="order-2 lg:order-2 overflow-hidden relative">
           <animated.img 
             src={MainImage} 
-            className="absolute inset-0 w-full left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 aspect-square"
+            className="absolute inset-0 w-full left-1/2 lg:left-0 lg:top-1/2 -translate-x-1/2 -translate-y-10 lg:-translate-x-1/2 lg:-translate-y-1/2 aspect-square rotate-180 lg:rotate-0"
             onLoad={(e) => 
               e.currentTarget.decode?.().then(() => {
               setLoaded(true)
@@ -40,11 +54,24 @@ export default function Basket(){
             style={imageLoaded}
           />
         </div>
-        <div className="flex items-center">
-          <div className="flex items-center gap-2 text-gray-700 w-[30vw]">
-            <span>Название товара или услуги</span>
-            <div className="flex-1 border-b-2 border-dotted border-gray-400"></div>
-            <span className="font-medium">2 490 ₽</span>
+        <div className="order-1 lg:order-3 flex justify-center lg:justify-normal items-center">
+          <div className="w-[80%] lg:w-[50%]">
+            <div className="w-full space-y-2">
+              <DottedRow label="Баланс" value="450 ₽" />
+              <DottedRow label="Заказов на" value="450 ₽" />
+            </div>
+            <Separator className="my-5" />
+            <div className="text-sm text-center space-y-1">
+              <DottedRow label="Позиций" value="29 шт"/>
+              <DottedRow label="Каллорийность" value="2100 ккал"/>
+            </div>
+            <Separator className="my-5"/>
+            <div className="text-sm text-center space-y-1">
+              <p className="font-medium">Среднее по всем рецептам</p>
+              <DottedRow label="Белки" value="28 г"/>
+              <DottedRow label="Жиры" value="28 г"/>
+              <DottedRow label="Углеводы" value="28 г"/>
+            </div>
           </div>
         </div>
       </section>
@@ -64,11 +91,6 @@ export default function Basket(){
         }} className="rounded-[5px]">Поиск рецептов</Button>
       </section>
       )}
-      <section className="h-screen">
-        <p className="scroll-m-20 text-2xl font-semibold tracking-tight">
-          Мои рецепты
-        </p>
-      </section>
     </>
   )
 }
