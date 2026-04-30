@@ -42,4 +42,3 @@ async def remove_from_basket(
         return {"success": True}
     except NotAuthenticatedError:
         return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-

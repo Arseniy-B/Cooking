@@ -17,9 +17,11 @@ async def find_suitable_recipe(
     recipe_adapter: RecipeAdapterDep,
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1),
-    search: Search = Body()
+    search: Search = Body(),
 ) -> list[RecipeDisplay]:
-    recipes = await recipe_adapter.match_recipe(search=search.recipe_search, tags=search.tags, size=size, page=page)
+    recipes = await recipe_adapter.match_recipe(
+        search=search.recipe_search, tags=search.tags, size=size, page=page
+    )
     return recipes
 
 
@@ -37,10 +39,8 @@ async def get_suitable_ingredients(
     ingredients = await recipe_adapter.get_ingredients(search)
     return ingredients
 
+
 @router.get("/tag")
-async def get_suitable_tags(
-    recipe_adapter: RecipeAdapterDep,
-    name: str = Query()
-):
+async def get_suitable_tags(recipe_adapter: RecipeAdapterDep, name: str = Query()):
     tags = await recipe_adapter.get_tag(name)
     return [i.name for i in tags]

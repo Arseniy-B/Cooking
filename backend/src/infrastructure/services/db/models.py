@@ -1,11 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    ForeignKey,
-    String,
-    Text,
-    Index,
-    Uuid
-)
+from sqlalchemy import Boolean, ForeignKey, String, Text, Index, Uuid
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -39,14 +32,18 @@ class Tag(Base):
             postgresql_ops={"name": "gin_trgm_ops"},
         ),
     )
+
     def __str__(self):
         return self.name
 
 
-
 class TagRecipe(Base):
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tag.id", ondelete="CASCADE"), index=True)
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipe.id", ondelete="CASCADE"), index=True)
+    tag_id: Mapped[int] = mapped_column(
+        ForeignKey("tag.id", ondelete="CASCADE"), index=True
+    )
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipe.id", ondelete="CASCADE"), index=True
+    )
 
 
 class Ingredient(Base):
@@ -70,7 +67,9 @@ class Ingredient(Base):
 
 
 class Recipe(Base):
-    uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), unique=True, index=True, default=uuid4)
+    uuid: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), unique=True, index=True, default=uuid4
+    )
     name: Mapped[str]
     country: Mapped[str]
     difficulty: Mapped[int]
@@ -133,13 +132,28 @@ class RecipeStepIngredient(Base):
 
 
 class Basket(Base):
-    user_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("user.uuid", ondelete="CASCADE"), index=True)
-    recipe_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("recipe.uuid", ondelete="CASCADE"), index=True)
+    user_uuid: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("user.uuid", ondelete="CASCADE"), index=True
+    )
+    recipe_uuid: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("recipe.uuid", ondelete="CASCADE"), index=True
+    )
+
+
+class PurchasedRecipes(Base):
+    user_uuid: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("user.uuid", ondelete="CASCADE"), index=True
+    )
+    recipe_uuid: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("recipe.uuid", ondelete="CASCADE"), index=True
+    )
 
 
 class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), unique=True, index=True, default=uuid4)
+    uuid: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), unique=True, index=True, default=uuid4
+    )
     username: Mapped[str] = mapped_column(String(length=255), nullable=False)
     hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

@@ -1,6 +1,5 @@
 import axios, { type AxiosResponse } from "axios"
 import type { RecipeSearch, Recipe, UserLogin, UserCreate } from "@/services/api/schemas"
-import { data } from "react-router-dom"
 
 
 export const BASE_URL = "http://localhost:8000"
@@ -43,4 +42,8 @@ export async function remove_from_basket(recipe_uuid: string): Promise<AxiosResp
 
 export async function get_tags(name: string): Promise<AxiosResponse<string[]>>{
   return await axios.get(BASE_URL + `/recipes/tag?name=${name}`)
+}
+
+export async function get_purchased(page: number = 1, size: number = 20):Promise<AxiosResponse<Recipe[]>> {
+  return await axios.get(BASE_URL + `/purchased?page=${page}&size=${size}`, {withCredentials: true})
 }

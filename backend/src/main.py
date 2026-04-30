@@ -9,6 +9,7 @@ from src.config import MEDIA_DIR
 from src.handlers.api.v1.recipe import router as recipe_router
 from src.handlers.api.v1.basket import router as basket_router
 from src.handlers.api.v1.auth import router as auth_router
+from src.handlers.api.v1.purchased import router as purchased_router
 
 
 app = FastAPI(lifespan=lifespan)
@@ -19,7 +20,8 @@ origins = [
     "http://localhost:5173",
     "http://localhost:4173",
     "http://localhost:5173/auth",
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1:5173",
+    "*"
 ]
 
 app.add_middleware(
@@ -37,3 +39,4 @@ add_pagination(app)
 app.include_router(recipe_router)
 app.include_router(basket_router)
 app.include_router(auth_router)
+app.include_router(purchased_router)

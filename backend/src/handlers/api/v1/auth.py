@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Body
 from src.domain.entities.user import UserLogin, UserCreate
 from src.handlers.api.v1.depends import AuthAdapterDep
-from src.infrastructure.adapters.auth.exceptions import AuthAdapterError, NotAuthenticatedError
+from src.infrastructure.adapters.auth.exceptions import (
+    AuthAdapterError,
+    NotAuthenticatedError,
+)
 
 
 router = APIRouter(prefix="/auth")
@@ -26,7 +29,7 @@ async def sign_in(auth: AuthAdapterDep, user: UserLogin = Body()):
 
 
 @router.get("/is_login")
-async def is_login(auth:AuthAdapterDep):
+async def is_login(auth: AuthAdapterDep):
     try:
         await auth.is_authenticated()
         return {"success": True}

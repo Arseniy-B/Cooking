@@ -18,3 +18,11 @@ export type BasketContextType = {
   basketRecipes: Recipe[]
   setBasketRecipes: React.Dispatch<React.SetStateAction<Recipe[]>>
 }
+
+export const PurchasedRecipesContext = createContext<
+  {purchasedRecipes: Recipe[]; setPurchasedRecipes: (purchasedRecipes: Recipe[]) => void} | null
+>(null);
+
+export const PurchasedChangesContext = createContext<
+  {purchasedChanges: number; setPurchasedChanges: (purchasedChanges: number) => void} | null
+>(null);

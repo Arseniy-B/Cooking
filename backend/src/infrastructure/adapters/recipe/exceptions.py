@@ -5,5 +5,5 @@ class RecipeNotFoundError(BaseRecipeAdapterError):
     pass
 
 
-class BasketExistError(BaseRecipeAdapterError):
+class RecordExistError(BaseRecipeAdapterError):
     pass

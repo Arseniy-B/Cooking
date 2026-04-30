@@ -11,8 +11,8 @@ import Auth from "./pages/auth.tsx"
 import Account from "./pages/account.tsx"
 import Search from "./pages/search.tsx"
 import { useState, useEffect } from "react";
-import { AuthContext, BasketContext, BasketChangesContext } from "@/services/contexts.ts";
-import { check_login, get_basket } from "@/services/api/handlers.ts"
+import { AuthContext, BasketContext, BasketChangesContext, PurchasedRecipesContext, PurchasedChangesContext } from "@/services/contexts.ts";
+import { check_login, get_basket, get_purchased } from "@/services/api/handlers.ts"
 import type {Recipe} from "@/services/api/schemas.ts"
 import ScrollToTop from "@/components/scroll_to_top.tsx" 
 
@@ -49,24 +49,22 @@ const router = createBrowserRouter([
 function App(){
   const [isLogin, setIsLogin] = useState(false)
   const [basketRecipes, setBasketRecipes] = useState<Recipe[]>([])
+  const [purchasedRecipes, setPurchasedRecipes] = useState<Recipe[]>([])
   const [basketChanges, setBasketChanges] = useState<number>(0)
+  const [purchasedChanges, setPurchasedChanges] = useState<number>(0)
 
-  async function getBasketRecipes(){
-    const ans = await get_basket()
-    setBasketRecipes(ans.data)
-  }
-
-  async function checkIsLogin(){
+  async function activateContexts(){
     const ans = await check_login()
     setIsLogin(ans.data.success)
     if (ans.data.success){
-      await getBasketRecipes()
-    } else {
-      setBasketRecipes([])
-    }
+      const basket = await get_basket()
+      setBasketRecipes(basket.data)
+      const purchased = await get_purchased()
+      setPurchasedRecipes(purchased.data)
+    } 
   }
   useEffect(() => {
-    checkIsLogin()
+    activateContexts()
   }, [isLogin])
 
   return (
@@ -74,7 +72,11 @@ function App(){
       <AuthContext value={{isLogin, setIsLogin}}>
         <BasketContext value={{basketRecipes, setBasketRecipes}}>
           <BasketChangesContext value={{basketChanges, setBasketChanges}}>
-            <RouterProvider router={router} />
+            <PurchasedRecipesContext value={{purchasedRecipes, setPurchasedRecipes}}>
+              <PurchasedChangesContext value={{purchasedChanges, setPurchasedChanges}}>
+                <RouterProvider router={router} />
+              </PurchasedChangesContext>
+            </PurchasedRecipesContext>
           </BasketChangesContext>
         </BasketContext>
       </AuthContext>

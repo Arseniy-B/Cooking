@@ -8,7 +8,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { AuthContext, BasketChangesContext } from "@/services/contexts"
+import { AuthContext, BasketChangesContext, PurchasedChangesContext } from "@/services/contexts"
 
 
 type HeaderProps = {
@@ -20,11 +20,16 @@ export default function Header({ children }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const {basketChanges, setBasketChanges} = useContext(BasketChangesContext)!;
+  const {purchasedChanges, setPurchasedChanges} = useContext(PurchasedChangesContext)!;
   const {isLogin, } = useContext(AuthContext)!;
 
   useEffect(()=>{
-    if(location.pathname==="/basket"){
-      setBasketChanges(0)
+    switch (location.pathname){
+      case "/basket": 
+        setBasketChanges(0)
+        break;
+      case "/account":
+        setPurchasedChanges(0)
     }
   }, [location])
   
@@ -77,6 +82,14 @@ export default function Header({ children }: HeaderProps) {
               navigate("/account")
             }} variant={location.pathname === "/account" ? "default" : "ghost"} className="w-10 h-10 flex justify-center items-center rounded-[10px]" >
               <User />
+              {purchasedChanges>0 && (
+                <Badge
+                  variant="default"
+                  className="absolute -top-1.5 -left-1.5 h-5 w-5 text-white rounded-[5px]"
+                >
+                  {purchasedChanges> 99 ? "99+" : purchasedChanges}
+                </Badge>
+              )}
             </Button>
           )}
           <Button onClick={() => {

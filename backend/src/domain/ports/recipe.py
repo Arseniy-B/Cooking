@@ -5,6 +5,9 @@ from uuid import UUID
 
 class RecipePort(ABC):
     @abstractmethod
+    async def get_purchased(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplay]: pass
+ 
+    @abstractmethod
     async def match_recipe(self, search: RecipeSearch, tags: list[str] | None = None, page: int = 1, size: int = 20) -> list[RecipeDisplay]: pass
 
     @abstractmethod

@@ -24,14 +24,18 @@ from src.infrastructure.services.db.models import (
     RecipeStepIngredient,
     Basket,
     Tag,
-    TagRecipe
+    TagRecipe,
+    PurchasedRecipes
 )
-from src.infrastructure.adapters.recipe.exceptions import BasketExistError, RecipeNotFoundError
+from src.infrastructure.adapters.recipe.exceptions import RecordExistError, RecipeNotFoundError
 
 
 class RecipeAdapter(RecipePort):
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    async def pay_recipe(self):
+        ...
 
     async def add_to_basket(self, recipe_uuid: UUID, user_uuid: UUID):
         stmt = select(Recipe).where(Recipe.uuid == recipe_uuid)
@@ -39,14 +43,24 @@ class RecipeAdapter(RecipePort):
         recipe = res.scalar_one_or_none()
         if not recipe:
             raise RecipeNotFoundError
-        stmt = select(Basket).where(Basket.user_uuid == user_uuid, Basket.recipe_uuid == recipe_uuid)
-        res = await self.session.execute(stmt)
-        exist_basket_recipe = res.scalar_one_or_none()
-        if exist_basket_recipe:
-            raise BasketExistError 
-        basket = Basket(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
-        self.session.add(basket)
-        await self.session.commit()
+        if recipe.cost == 0:
+            stmt = select(PurchasedRecipes).where(PurchasedRecipes.user_uuid == user_uuid, PurchasedRecipes.recipe_uuid == recipe_uuid)
+            res = await self.session.execute(stmt)
+            exist_purchased_recipe = res.scalar_one_or_none()
+            if exist_purchased_recipe:
+                raise RecordExistError
+            purchased = PurchasedRecipes(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
+            self.session.add(purchased)
+            await self.session.commit()
+        else:
+            stmt = select(Basket).where(Basket.user_uuid == user_uuid, Basket.recipe_uuid == recipe_uuid)
+            res = await self.session.execute(stmt)
+            exist_basket_recipe = res.scalar_one_or_none()
+            if exist_basket_recipe:
+                raise RecordExistError 
+            basket = Basket(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
+            self.session.add(basket)
+            await self.session.commit()
 
     async def remove_from_basket(self, recipe_uuid: UUID, user_uuid: UUID): 
         stmt = select(Basket).where(Basket.recipe_uuid==recipe_uuid, Basket.user_uuid == user_uuid)
@@ -59,6 +73,11 @@ class RecipeAdapter(RecipePort):
 
     async def get_user_basket(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplaySchema]: 
         stmt = select(Recipe).join(Basket).where(Basket.user_uuid == user_uuid)
+        db_recipes = await apaginate(self.session, stmt, params=Params(page=page, size=size))
+        return [RecipeDisplaySchema.model_validate(i.__dict__) for i in db_recipes.items]
+    
+    async def get_purchased(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplaySchema]:
+        stmt = select(Recipe).join(PurchasedRecipes).where(PurchasedRecipes.user_uuid==user_uuid)
         db_recipes = await apaginate(self.session, stmt, params=Params(page=page, size=size))
         return [RecipeDisplaySchema.model_validate(i.__dict__) for i in db_recipes.items]
 
@@ -127,18 +146,15 @@ class RecipeAdapter(RecipePort):
         return ingredients
 
     async def get_tag(self, name: str) -> list[TagsSchema]: 
-        stmt = (
-            select(Tag)
-            .where(Tag.name.op("%")(name))
-            .order_by(func.similarity(Tag.name, name).desc())
-        )
+        if name: 
+            stmt = (
+                select(Tag)
+                .where(Tag.name.op("%")(name))
+                .order_by(func.similarity(Tag.name, name).desc())
+            )
+        else:
+            stmt = select(Tag)
         ans = await self.session.execute(stmt)
         tags = ans.scalars()
         return [TagsSchema.model_validate(i.__dict__) for i in tags]
-
-
-
-
-
-
 
