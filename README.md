@@ -1,4 +1,4 @@
-# 🍳 Cooking — Магазин рецептов
+# Cooking — Магазин рецептов
 
 **Современное fullstack-приложение для поиска, хранения и управления рецептами.**
 
@@ -69,12 +69,13 @@
 
 ```bash
 # Клонирование
-git clone https://github.com/твой_ник/cooking.git
+git clone https://github.com/Arseniy-B/Cooking
 cd cooking
 
 # Запуск backend
 cd backend
-uvicorn app.main:app --reload
+source .venv/bin/activate
+uvicorn src.main:app --reload
 
 # Запуск frontend
 cd ../frontend
