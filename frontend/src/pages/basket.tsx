@@ -27,7 +27,7 @@ const DottedRow = ({ label, value }: { label: string; value: string }) => (
 
 export default function Basket(){
   const navigate = useNavigate()
-  const {basketRecipes } = useContext(BasketContext)!;
+  const { basketRecipes } = useContext(BasketContext)!;
   const [loaded, setLoaded] = useState(false)
   const { scrollYProgress } = useScroll()
 
