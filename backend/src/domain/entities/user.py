@@ -9,6 +9,7 @@ class User(BaseModel):
     is_superuser: bool
     is_active: bool
     avatar_url: str | None
+    balance: float
 
 
 class UserCreate(BaseModel):

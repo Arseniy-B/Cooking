@@ -1,6 +1,7 @@
 class BaseRecipeAdapterError(Exception):
     pass
 
+
 class RecipeNotFoundError(BaseRecipeAdapterError):
     pass
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, ForeignKey, String, Text, Index, Uuid
+from sqlalchemy import Boolean, ForeignKey, String, Text, Index, Uuid, text
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -159,6 +159,10 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    balance: Mapped[float] = mapped_column(
+        server_default=text("0"), nullable=False
+    )
 
     def __str__(self):
         return self.username

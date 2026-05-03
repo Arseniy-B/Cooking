@@ -27,4 +27,3 @@ class RecipePort(ABC):
 
     @abstractmethod
     async def get_user_basket(self, user_uuid: UUID, page: int, size: int) -> list[RecipeDisplay]: pass 
-
