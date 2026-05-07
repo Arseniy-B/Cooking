@@ -34,6 +34,6 @@ async def create_superuser():
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(*_: FastAPI):
     await create_superuser()
     yield

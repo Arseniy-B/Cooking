@@ -3,33 +3,35 @@ from typing import Annotated
 from src.domain.ports.auth import AuthPort
 from src.infrastructure.services.db.db import AsyncSession, db_helper
 from src.infrastructure.adapters.auth.adapter import AuthAdapter
-from src.domain.ports.recipe import RecipePort
-from src.domain.ports.buy import BuyPort
-from src.infrastructure.adapters.recipe.adapter import RecipeAdapter
-from src.infrastructure.adapters.buy.adapter import BuyAdapter
+from src.domain.ports.recipe import RecipePort, BasketPort, PurchasePort
+from src.domain.ports.user import UserPort
+from src.infrastructure.adapters.recipe.adapter import RecipeAdapter, BasketAdapter, PurchaseAdapter
+from src.infrastructure.adapters.user.adapter import UserAdapter
 
 
 SessionDep = Annotated[AsyncSession, Depends(db_helper.get_session)]
 
 
-async def get_recipe_adapter(session: SessionDep) -> RecipePort:
-    return RecipeAdapter(session)
-
-
-RecipeAdapterDep = Annotated[RecipePort, Depends(get_recipe_adapter)]
-
+RecipeAdapterDep = Annotated[
+    RecipePort,
+    Depends(lambda session=SessionDep: RecipeAdapter(session))
+]
+BasketAdapterDep = Annotated[
+    BasketPort,
+    Depends(lambda session=SessionDep: BasketAdapter(session))
+]
+PurchaseAdapterDep = Annotated[
+    PurchasePort,
+    Depends(lambda session=SessionDep: PurchaseAdapter(session))
+]
+UserAdapterDep = Annotated[
+    UserPort,
+    Depends(lambda session=SessionDep: UserAdapter(session))
+]
 
 async def get_auth_adapter(
     session: SessionDep, request: Request, response: Response
 ) -> AuthPort:
     return AuthAdapter(session, request, response)
 
-
-async def get_pay_adapter(
-    session: SessionDep
-) -> BuyPort:
-    return BuyAdapter(session)
-
-
 AuthAdapterDep = Annotated[AuthPort, Depends(get_auth_adapter)]
-BuyAdapterDep = Annotated[BuyPort, Depends(get_pay_adapter)]
