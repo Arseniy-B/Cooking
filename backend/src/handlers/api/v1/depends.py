@@ -7,26 +7,35 @@ from src.domain.ports.recipe import RecipePort, BasketPort, PurchasePort
 from src.domain.ports.user import UserPort
 from src.infrastructure.adapters.recipe.adapter import RecipeAdapter, BasketAdapter, PurchaseAdapter
 from src.infrastructure.adapters.user.adapter import UserAdapter
-
+from typing import TypeVar, Callable
 
 SessionDep = Annotated[AsyncSession, Depends(db_helper.get_session)]
 
 
+PortT = TypeVar("PortT")
+def adapter_dep(
+    adapter: Callable[[SessionDep], PortT],
+):
+    def dependency(session: SessionDep) -> PortT:
+        return adapter(session)
+
+    return dependency
+
 RecipeAdapterDep = Annotated[
     RecipePort,
-    Depends(lambda session=SessionDep: RecipeAdapter(session))
+    Depends(adapter_dep(RecipeAdapter))
 ]
 BasketAdapterDep = Annotated[
     BasketPort,
-    Depends(lambda session=SessionDep: BasketAdapter(session))
+    Depends(adapter_dep(BasketAdapter))
 ]
 PurchaseAdapterDep = Annotated[
     PurchasePort,
-    Depends(lambda session=SessionDep: PurchaseAdapter(session))
+    Depends(adapter_dep(PurchaseAdapter))
 ]
 UserAdapterDep = Annotated[
     UserPort,
-    Depends(lambda session=SessionDep: UserAdapter(session))
+    Depends(adapter_dep(UserAdapter))
 ]
 
 async def get_auth_adapter(

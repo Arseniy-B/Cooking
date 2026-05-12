@@ -2,7 +2,7 @@ import { useContext } from "react"
 import { Button } from "@/components/ui/button"
 import { BasketContext, BasketChangesContext, PurchasedRecipesContext, PurchasedChangesContext, AuthContext } from "@/services/contexts"
 import { useNavigate } from "react-router-dom"
-import { add_to_basket } from "@/services/api/handlers"
+import { add_to_basket, buy_recipe } from "@/services/api/handlers"
 import { ShoppingCart } from "lucide-react"
 import type { Recipe } from "@/services/api/schemas" 
 
@@ -19,21 +19,26 @@ export default function BasketButton({recipe}: {recipe: Recipe}){
     if (!isLogin){
       navigate("/auth")
     } else {
-      await add_to_basket(uuid).then(() => {
-        if (recipe.cost > 0){
-          setBasketRecipes([...basketRecipes, recipe])
-          setBasketChanges(basketChanges+1)
-        } else {
+      if (recipe.cost === 0){
+        await buy_recipe(uuid).then(()=>{
           setPurchasedRecipes([...purchasedRecipes, recipe])
           setPurchasedChanges(purchasedChanges+1)
-        }
-      })
+        })
+      } else {
+        await add_to_basket(uuid).then(() => {
+          setBasketRecipes([...basketRecipes, recipe])
+          setBasketChanges(basketChanges+1)
+        })
+      }
     }
   }
 
-  const recipeExists = 
-    basketRecipes && basketRecipes.some(r => r.uuid === recipe.uuid) ||
-    purchasedRecipes && purchasedRecipes.some(r => r.uuid === recipe.uuid);
+  const recipeExists =
+    (Array.isArray(basketRecipes) &&
+      basketRecipes.some(r => r.uuid === recipe.uuid)) ||
+
+    (Array.isArray(purchasedRecipes) &&
+      purchasedRecipes.some(r => r.uuid === recipe.uuid));
 
   return (
     <>

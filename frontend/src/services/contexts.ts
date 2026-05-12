@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { Recipe } from "./api/schemas";
+import type { Recipe, UserData } from "./api/schemas";
 
 
 export const AuthContext = createContext<
@@ -25,4 +25,8 @@ export const PurchasedRecipesContext = createContext<
 
 export const PurchasedChangesContext = createContext<
   {purchasedChanges: number; setPurchasedChanges: (purchasedChanges: number) => void} | null
+>(null);
+
+export const UserDataContext = createContext<
+  {userData: UserData; setUserData: (userData: UserData) => void} | null
 >(null);

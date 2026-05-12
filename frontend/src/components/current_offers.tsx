@@ -3,6 +3,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { get_suitable_recipe, BASE_URL } from "@/services/api/handlers"
 import type { Recipe, RecipeSearch } from "@/services/api/schemas"
 import { animated, useSprings } from "@react-spring/web"
+import { View, Shapes } from "lucide-react"
 
 
 export default function CurrentOffers() {
@@ -21,7 +22,7 @@ export default function CurrentOffers() {
   );
 
   async function get_slides(){
-    const search: RecipeSearch = {cost: true}
+    const search: RecipeSearch = {name: "", cost: true}
     const ans = await get_suitable_recipe(search)
     setSlides(ans.data)
   }
@@ -40,21 +41,21 @@ export default function CurrentOffers() {
           align: "start",
         }}
         orientation={isLg ? "vertical" : "horizontal"}
-        className="lg:w-full w-[50vw]"
+        className="lg:w-90 w-[70vw] lg:h-full"
       >
-        <CarouselContent className="-mt-1 lg:h-90 lg:overflow-visible">
+        <CarouselContent className="lg:-mt-1 lg:h-[45vh] lg:overflow-visible">
           {slides && slides.map((value, index) => (
-            <CarouselItem key={index} className="rounded-[5px] lg:basis-1/3 pl-4">
+            <CarouselItem key={index} className="rounded-[5px] basis-1/1 lg:basis-1/3 pl-4">
               <div className={`${value.cost > 20 ? "bg-white text-black" : "bg-red-900 text-white"} 
-                  h-full w-full items-center justify-between rounded-[5px]
-                  transition hover:shadow-lg flex lg:grid lg:grid-cols-[auto_50%] gap-5 pl-2
+                  h-25 lg:h-full w-full items-center justify-between rounded-[5px]
+                  transition hover:shadow-lg flex lg:grid lg:grid-cols-[auto_50%] gap-5
                   ${isLg ? "hover:-translate-x-4" : "hover:-translate-y-2"}
               `}>
                 <animated.img
                   key={index}
                   src={BASE_URL + value.image_path}
                   style={springs[index]}
-                  className="h-13 lg:h-22 aspect-square object-cover rounded-[5px] shrink-0"
+                  className="h-25 lg:h-31 aspect-square object-cover rounded-[5px] shrink-0"
                   onLoad={(e) => {
                     e.currentTarget.decode?.().then(() => {
                       setImagesLoaded(prev => {
@@ -69,6 +70,7 @@ export default function CurrentOffers() {
                 <div className="w-full h-full flex flex-col justify-center gap-5">
                   <p>{value.name}</p>
                   <p className={`${value.cost > 20? "text-green-500" : ""}`}>{value.cost}руб</p>
+                  
                 </div>
               </div>
             </CarouselItem>

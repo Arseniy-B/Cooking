@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react"
-import { Home, Search, ShoppingCart, LogIn, User, Menu} from "lucide-react"
+import { Home, Search, ShoppingCart, LogIn, User, Menu, Refrigerator} from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -80,8 +80,8 @@ export default function Header({ children }: HeaderProps) {
           {isLogin === true && (
             <Button onClick={() => {
               navigate("/account")
-            }} variant={location.pathname === "/account" ? "default" : "ghost"} className="w-10 h-10 flex justify-center items-center rounded-[10px]" >
-              <User />
+            }} variant={location.pathname === "/account" ? "default" : "ghost"} className="relative w-10 h-10 flex justify-center items-center rounded-[10px]" >
+              <Refrigerator/>
               {purchasedChanges>0 && (
                 <Badge
                   variant="default"

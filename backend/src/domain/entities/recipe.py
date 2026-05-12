@@ -49,7 +49,7 @@ class RecipeStep(BaseModel):
     image_path: str | None = None
     time_seconds: int
     description: str
-    ingredients: list[RecipeStepIngredient]
+    ingredients: list[RecipeStepIngredient] | None
     model_config = ConfigDict(from_attributes=True)
 
     @model_validator(mode="after")
@@ -61,6 +61,7 @@ class RecipeStep(BaseModel):
 
 class Recipe(BaseModel):
     uuid: UUID
+    creator_uuid: UUID | None
     name: str
     country: str | None
     difficulty: int
@@ -84,6 +85,7 @@ class Recipe(BaseModel):
 
 class RecipeDisplay(BaseModel):
     uuid: UUID
+    creator_uuid: UUID | None
     name: str
     country: str | None
     difficulty: int
@@ -127,3 +129,12 @@ class IngredientSearch(BaseModel):
     @field_serializer("name")
     def serialize(self, name: str):
         return name.lower()
+
+class PurchaseData(BaseModel):
+    total_cost: int
+    positions_count: int
+    calories: float
+    avg_proteins: float
+    avg_fats: float
+    avg_carbohydrates: float
+

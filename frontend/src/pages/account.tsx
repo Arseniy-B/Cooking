@@ -1,45 +1,47 @@
 import Header from "@/components/header"
-import { logout } from "@/services/api/handlers"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import { useContext } from "react"
-import { AuthContext, PurchasedRecipesContext} from "@/services/contexts"
-import type {Recipe} from "@/services/api/schemas"
+import { PurchasedRecipesContext, UserDataContext } from "@/services/contexts"
+import AccountWidget from "@/components/account_widget"
+import IncreaseBalanceButton from "@/components/increase_balance_button"
+import History from "@/components/history"
+import PurchasedRecipeCard from "@/components/purchased_card"
 
-
-function PurchasedRecipeCard({recipe}: {recipe: Recipe}){
-  return (
-    <div>{recipe.name}</div>
-  )
-}
 
 export default function Account() {
+  const {userData} = useContext(UserDataContext)!;
   const navigate = useNavigate()
-  const { setIsLogin } = useContext(AuthContext)!;
   const { purchasedRecipes } = useContext(PurchasedRecipesContext)!;
-
-  async function logoutHandle(){
-    await logout()
-    .then((ans) => {
-      if (ans.data.success){
-        setIsLogin(false)
-        navigate("/auth")
-      }
-    })
-  }
-
   return (
     <>
     <Header></Header>
-    <section className="w-full h-screen pt-20 p-10">
-      <div className="w-full flex justify-end">
-        <Button onClick={logoutHandle} size="lg" className="rounded-[5px]">Выход</Button>
+    <section className="w-full h-screen pt-20 p-10 grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-2">
+      <div className="order-2 lg:order-1 h-full w-full flex justify-end">
+        <History/>
+      </div>
+      <div className="order-1 lg:order-2 flex justify-center">
+        <div>
+          <AccountWidget/>
+          <div className="sm:w-105 mt-5 flex items-center justify-between bg-muted rounded-xl px-4 py-3">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Баланс
+              </p>
+
+              <p className="text-2xl font-bold">
+                {userData.balance}₽
+              </p>
+            </div>
+            <IncreaseBalanceButton/>
+          </div>
+        </div>
       </div>
     </section>
     <section>
       {purchasedRecipes.length>0 ? (
-        <section className="w-full min-h-screen py-[10vh] bg-gray-100 flex flex-col items-center">
-          {purchasedRecipes.map((value, i) => (
+        <section className="w-full min-h-screen py-[10vh] bg-gray-100 flex flex-wrap justify-center gap-5">
+          {purchasedRecipes?.map((value, i) => (
             <PurchasedRecipeCard recipe={value} key={i}/>
           ))}
         </section>
@@ -53,7 +55,6 @@ export default function Account() {
         }} className="rounded-[5px]">Поиск рецептов</Button>
       </section>
       )}
-
     </section>
     </>
   )

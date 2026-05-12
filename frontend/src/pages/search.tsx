@@ -24,7 +24,7 @@ export default function Search(){
     cost: 0,
   })));
   const [ searchParams ] = useSearchParams()
-  const [search, setSearch] = useState<RecipeSearch>({})
+  const [search, setSearch] = useState<RecipeSearch>({name: ""})
   const [tags, setTags] = useState<string[]>([])
   const { scrollY } = useScroll();
   const [isLg, setIsLg] = useState(false)
@@ -50,10 +50,7 @@ export default function Search(){
 
   useEffect(()=>{
     const allParams = Object.fromEntries(searchParams)
-    if (allParams){
-      setSearch(allParams)
-    }
-    setSearch({cost: true})
+    setSearch({...search, cost: true, ...allParams})
   }, [searchParams])
   
   useEffect(()=>{
@@ -72,7 +69,7 @@ export default function Search(){
           <div className="flex flex-col justify-center mt-30 items-center px-[20%]">
             <div className="flex w-full justify-center">
               <InputGroup className="rounded-[5px]">
-                <InputGroupInput onChange={nameChange} id="input-group-url" placeholder="Введите название блюда" />
+                <InputGroupInput onChange={nameChange} value={search.name} id="input-group-url" placeholder="Введите название блюда" />
                 <InputGroupAddon align="inline-end">
                   <SearchIcon />
                 </InputGroupAddon>

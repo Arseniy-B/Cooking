@@ -10,6 +10,7 @@ from src.handlers.api.v1.recipe import router as recipe_router
 from src.handlers.api.v1.basket import router as basket_router
 from src.handlers.api.v1.auth import router as auth_router
 from src.handlers.api.v1.purchased import router as purchased_router
+from src.handlers.api.v1.user import router as user_router
 
 
 app = FastAPI(lifespan=lifespan)
@@ -36,3 +37,4 @@ app.include_router(recipe_router)
 app.include_router(basket_router)
 app.include_router(auth_router)
 app.include_router(purchased_router)
+app.include_router(user_router)

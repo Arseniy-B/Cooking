@@ -1,12 +1,14 @@
 import type { Recipe } from "@/services/api/schemas"
 import BasketButton from "@/components/basket_button"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { useSpring, animated } from "@react-spring/web"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BASE_URL } from "@/services/api/handlers"
 import { Eye } from "lucide-react"
+import { PurchasedRecipesContext } from "@/services/contexts"
+import PurchasedRecipeCard from "./purchased_card"
 
 
 interface RecipeProps {
@@ -14,21 +16,25 @@ interface RecipeProps {
 }
 
 const SimpleCard: React.FC<RecipeProps> = ({recipe}) => {
-  
+  const {purchasedRecipes} = useContext(PurchasedRecipesContext)!;
+
+  if (purchasedRecipes.some(r=>r.uuid === recipe.uuid)){
+    return(
+      <PurchasedRecipeCard recipe={recipe}/>
+    )
+  }
   const [loaded, setLoaded] = useState(false)
-  
   const imageLoaded = useSpring({
     opacity: loaded ? 1 : 0,
     config: { tension: 120, friction: 20 }
   })
-
-  
-
   return (
     <div className="w-80 h-120 lg:w-80 lg:h-120 bg-white rounded-[5px] border
       transition duration-300 ease-out 
       hover:-translate-y-1 hover:scale-100
-      hover:shadow-lg active:scale-100">
+      hover:shadow-lg active:scale-100
+      shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
+    >
       <div className="rounded-[5px] w-full h-[60%] p-1">
         {!loaded && (
           <Skeleton className="h-full w-full rounded-[5px]">
@@ -38,10 +44,8 @@ const SimpleCard: React.FC<RecipeProps> = ({recipe}) => {
           <animated.img 
             src={BASE_URL + recipe.image_path} 
             className={`${loaded? "w-full h-full" : ""} object-cover lg:object-right pointer-none rounded-[5px]`}
-            onLoad={(e) => {
-              e.currentTarget.decode?.().then(() => {
-                setLoaded(true)
-              })
+            onLoad={() => {
+              setLoaded(true)
             }}
             style={imageLoaded}
           />

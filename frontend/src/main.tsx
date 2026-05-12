@@ -11,9 +11,16 @@ import Auth from "./pages/auth.tsx"
 import Account from "./pages/account.tsx"
 import Search from "./pages/search.tsx"
 import { useState, useEffect } from "react";
-import { AuthContext, BasketContext, BasketChangesContext, PurchasedRecipesContext, PurchasedChangesContext } from "@/services/contexts.ts";
-import { check_login, get_basket, get_purchased } from "@/services/api/handlers.ts"
-import type {Recipe} from "@/services/api/schemas.ts"
+import { 
+  AuthContext, 
+  BasketContext, 
+  BasketChangesContext, 
+  PurchasedRecipesContext, 
+  PurchasedChangesContext,
+  UserDataContext,
+} from "@/services/contexts.ts";
+import { check_login, get_basket, get_purchased, get_user_data } from "@/services/api/handlers.ts"
+import type {Recipe, UserData} from "@/services/api/schemas.ts"
 import ScrollToTop from "@/components/scroll_to_top.tsx" 
 
 
@@ -52,16 +59,17 @@ function App(){
   const [purchasedRecipes, setPurchasedRecipes] = useState<Recipe[]>([])
   const [basketChanges, setBasketChanges] = useState<number>(0)
   const [purchasedChanges, setPurchasedChanges] = useState<number>(0)
+  const [userData, setUserData] = useState<UserData>({username: "", balance: 0})
 
   async function activateContexts(){
     const ans = await check_login()
     setIsLogin(ans.data.success)
-    if (ans.data.success){
-      const basket = await get_basket()
-      setBasketRecipes(basket.data)
-      const purchased = await get_purchased()
-      setPurchasedRecipes(purchased.data)
-    } 
+    const basket = await get_basket()
+    setBasketRecipes(basket.data)
+    const purchased = await get_purchased()
+    setPurchasedRecipes(purchased.data)
+    const user = await get_user_data()
+    setUserData(user.data)
   }
   useEffect(() => {
     activateContexts()
@@ -74,7 +82,9 @@ function App(){
           <BasketChangesContext value={{basketChanges, setBasketChanges}}>
             <PurchasedRecipesContext value={{purchasedRecipes, setPurchasedRecipes}}>
               <PurchasedChangesContext value={{purchasedChanges, setPurchasedChanges}}>
-                <RouterProvider router={router} />
+                <UserDataContext value={{userData, setUserData}}>
+                  <RouterProvider router={router} />
+                </UserDataContext>
               </PurchasedChangesContext>
             </PurchasedRecipesContext>
           </BasketChangesContext>

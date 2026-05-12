@@ -2,11 +2,9 @@ from fastapi import APIRouter, Query, Body
 
 from src.domain.entities.recipe import (
     IngredientSearch,
-    Recipe,
     Search,
     RecipeDisplay,
 )
-from uuid import UUID
 from src.handlers.api.v1.depends import RecipeAdapterDep
 
 router = APIRouter(prefix="/recipes")
@@ -23,12 +21,6 @@ async def find_suitable_recipe(
         search=search.recipe_search, tags=search.tags, size=size, page=page
     )
     return recipes
-
-
-@router.get("/full")
-async def get_full_recipe(recipe_adapter: RecipeAdapterDep, recipe_uuid: UUID):
-    recipe: Recipe = await recipe_adapter.get_full_recipe(recipe_uuid)
-    return recipe
 
 
 @router.get("/ingredients")

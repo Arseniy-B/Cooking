@@ -70,6 +70,7 @@ class Recipe(Base):
     uuid: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True), unique=True, index=True, default=uuid4
     )
+    creator_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), nullable=True)
     name: Mapped[str]
     country: Mapped[str]
     difficulty: Mapped[int]

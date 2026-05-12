@@ -13,7 +13,6 @@ import Header from "@/components/header.tsx"
 import { useNavigate } from "react-router-dom"
 
 
-
 export default function Home(){
   const navigate = useNavigate();
   const [popularRecipes, setPopularRecipes] = useState<Recipe[]>(Array.from({ length: 8 }, (_, i) => ({
@@ -64,12 +63,12 @@ export default function Home(){
   }, []);
   
   async function init_recipes(){
-    const popular_search: RecipeSearch = {popular: true, size: 6}
+    const popular_search: RecipeSearch = {name: "", popular: true, size: 6}
     await get_suitable_recipe(popular_search)
     .then((ans) => {
       setPopularRecipes(ans.data);
     })
-    const free_search: RecipeSearch = {cost: false}
+    const free_search: RecipeSearch = {name: "", cost: false}
     await get_suitable_recipe(free_search)
     .then((ans) => {
       setFreeRecipes(ans.data);
@@ -129,7 +128,7 @@ export default function Home(){
           </a>
         ))}
       </Header>
-      <section id="home" className="w-full h-screen grid lg:grid-cols-[60%_40%] grid-cols-1 lg:grid-rows-1 grid-rows-[auto_30%] bg-white">
+      <section id="home" className="w-full h-screen grid lg:grid-cols-[60%_40%] grid-cols-1 lg:grid-rows-1 grid-rows-[75vh_25vh] bg-white">
         <div className="p-[10vw]">
           <animated.div style={appearanceLeft}>
             <div className="lg:w-[40vw] flex flex-col pt-[20vw] lg:pt-[5vw] gap-15">
@@ -152,8 +151,8 @@ export default function Home(){
             })}
             style={imageLoaded}
           />
-          <div className="absolute h-full w-full flex items-center justify-center lg:pl-[10vw]">
-            <div className="w-[50vw] lg:w-[20vw] lg:px-2 lg:py-10 rounded-[10px] backdrop-blur-[1px] ">
+          <div className="absolute h-full w-full flex items-center justify-center">
+            <div className="w-[70vw] lg:w-90 lg:px-2 lg:py-10 rounded-[10px] backdrop-blur-[1px] ">
               <animated.div ref={ref} style={appearanceRight}>
                 <CurrentOffers/>
               </animated.div>

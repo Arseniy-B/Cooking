@@ -6,6 +6,7 @@ from src.domain.entities.recipe import (
     Ingredient,
     RecipeDisplay,
     Tag,
+    PurchaseData
 )
 from uuid import UUID
 
@@ -19,10 +20,6 @@ class RecipePort(ABC):
         page: int = 1,
         size: int = 20,
     ) -> list[RecipeDisplay]:
-        pass
-
-    @abstractmethod
-    async def get_full_recipe(self, recipe_uuid: UUID) -> Recipe:
         pass
 
     @abstractmethod
@@ -54,9 +51,13 @@ class PurchasePort(ABC):
     @abstractmethod
     async def get_purchased(
         self, user_uuid: UUID, page: int, size: int
-    ) -> list[RecipeDisplay]:
+    ) -> list[Recipe]:
         pass
 
     @abstractmethod
     async def buy_recipe(self, user_uuid: UUID, recipe_uuid: UUID):
+        pass
+
+    @abstractmethod
+    async def get_purchase_data(self, user_uuid: UUID) -> PurchaseData: 
         pass

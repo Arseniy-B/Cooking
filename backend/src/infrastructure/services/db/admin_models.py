@@ -19,8 +19,9 @@ from src.infrastructure.services.db.models import (
     User,
     Base,
     Tag,
-    TagRecipe
+    TagRecipe,
 )
+
 
 class IntegerPKAdmin(SqlAlchemyModelAdmin):
     """Базовый класс для всех моделей, где PK — Integer (id)"""
@@ -39,7 +40,9 @@ class IntegerPKAdmin(SqlAlchemyModelAdmin):
             return
         return await super().delete_model(id_int)
 
-    async def save_model(self, id: uuid.UUID | int | None | str, payload: dict) -> dict | None:
+    async def save_model(
+        self, id: uuid.UUID | int | None | str, payload: dict
+    ) -> dict | None:
         """Фикс создания и обновления"""
         if id is not None:
             try:
@@ -47,7 +50,11 @@ class IntegerPKAdmin(SqlAlchemyModelAdmin):
             except (ValueError, TypeError):
                 pass
 
-        if isinstance(payload, dict) and "id" in payload and payload.get("id") is not None:
+        if (
+            isinstance(payload, dict)
+            and "id" in payload
+            and payload.get("id") is not None
+        ):
             try:
                 payload["id"] = int(payload["id"])
             except (ValueError, TypeError):
@@ -153,7 +160,6 @@ class UserAdmin(IntegerPKAdmin):
             if not bcrypt.checkpw(password.encode(), obj.hash_password.encode()):
                 return None
             return obj.id
-        
 
     async def change_password(self, id: uuid.UUID | int | str, password: str) -> None:
         sessionmaker = self.get_sessionmaker()
@@ -181,15 +187,16 @@ class UserAdmin(IntegerPKAdmin):
         with open(file_path, "wb") as f:
             f.write(file_content)
 
-        return f"/media/users/{new_filename}"
+        return f"{new_filename}"
 
     async def get_obj(self, id: str | int | uuid.UUID) -> dict | None:
         id_int = int(id)
         ans = await super().get_obj(id_int)
         return ans
 
-
-    async def save_model(self, id: uuid.UUID | int | str | None, payload: dict) -> dict | None:
+    async def save_model(
+        self, id: uuid.UUID | int | str | None, payload: dict
+    ) -> dict | None:
         id_int = id
         if id:
             id_int = int(id)

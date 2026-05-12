@@ -13,6 +13,11 @@ class User(BaseModel):
     balance: float
 
 
+class UserData(BaseModel):
+    username: str
+    balance: float
+
+
 class UserCreate(BaseModel):
     username: str
     password: str
@@ -21,4 +26,3 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
-

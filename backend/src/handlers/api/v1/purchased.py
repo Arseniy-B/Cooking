@@ -33,3 +33,16 @@ async def buy_recipe(
         return JSONResponse({"success": True})
     except NotAuthenticatedError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+@router.get("/data")
+async def get_purchase_data(
+    auth: AuthAdapterDep,
+    purchase_adapter: PurchaseAdapterDep,
+):
+    try:
+        user_uuid = await auth.is_authenticated()
+        data = await purchase_adapter.get_purchase_data(user_uuid)
+        return data
+    except NotAuthenticatedError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+

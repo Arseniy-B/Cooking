@@ -2,13 +2,16 @@ from uuid import UUID
 
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import apaginate
-from sqlalchemy import Select, asc, desc, func, select
+from sqlalchemy import asc, desc, func, select
 from sqlalchemy.orm import selectinload
 
 from src.domain.entities.recipe import (
     Ingredient as IngredientSchema,
 )
 from src.domain.entities.recipe import IngredientSearch, RecipeSearch
+from src.domain.entities.recipe import (
+    PurchaseData as PurchaseDataSchema,
+)
 from src.domain.entities.recipe import (
     Recipe as RecipeSchema,
 )
@@ -71,25 +74,6 @@ class RecipeAdapter(RecipePort):
             for recipe in db_recipes.items
         ]
 
-    async def get_full_recipe(self, recipe_uuid: UUID) -> RecipeSchema:
-        stmt = self._get_main_stmt().where(Recipe.uuid == recipe_uuid)
-        recipe = await self.session.scalar(stmt)
-        if not recipe:
-            raise RecipeNotFoundError
-        recipe.views += 1
-        await self.session.commit()
-        return RecipeSchema.model_validate(recipe)
-
-    def _get_main_stmt(self) -> Select:
-        stmt = select(Recipe).options(
-            selectinload(Recipe.recipe_steps).options(
-                selectinload(RecipeStep.ingredients).options(
-                    selectinload(RecipeStepIngredient.ingredient)
-                )
-            )
-        )
-        return stmt
-
     async def get_ingredients(
         self, search: IngredientSearch, page: int = 1, size: int = 20
     ) -> list[IngredientSchema]:
@@ -118,7 +102,7 @@ class RecipeAdapter(RecipePort):
         ans = await self.session.execute(stmt)
         tags = ans.scalars()
         return [TagsSchema.model_validate(i.__dict__) for i in tags]
-
+    
 
 class BasketAdapter(BasketPort):
     def __init__(self, session: AsyncSession):
@@ -132,6 +116,9 @@ class BasketAdapter(BasketPort):
 
         if not recipe:
             raise RecipeNotFoundError
+
+        if recipe.cost == 0:
+            raise
 
         stmt = select(Basket).where(
             Basket.user_uuid == user_uuid, Basket.recipe_uuid == recipe_uuid
@@ -175,18 +162,25 @@ class PurchaseAdapter(PurchasePort):
 
     async def get_purchased(
         self, user_uuid: UUID, page: int, size: int
-    ) -> list[RecipeDisplaySchema]:
+    ) -> list[RecipeSchema]:
         stmt = (
             select(Recipe)
-            .join(PurchasedRecipes)
+            .join(PurchasedRecipes, PurchasedRecipes.recipe_uuid == Recipe.uuid)
+            .options(
+                selectinload(Recipe.recipe_steps).options(
+                    selectinload(RecipeStep.ingredients).options(
+                        selectinload(RecipeStepIngredient.ingredient)
+                    )
+                ),
+                selectinload(Recipe.tags)
+            )
             .where(PurchasedRecipes.user_uuid == user_uuid)
         )
+
         db_recipes = await apaginate(
             self.session, stmt, params=Params(page=page, size=size)
         )
-        return [
-            RecipeDisplaySchema.model_validate(i.__dict__) for i in db_recipes.items
-        ]
+        return [RecipeSchema.model_validate(i) for i in db_recipes.items]
 
     async def buy_recipe(self, user_uuid: UUID, recipe_uuid: UUID):
         async with self.session.begin():
@@ -200,6 +194,15 @@ class PurchaseAdapter(PurchasePort):
             )
             if not recipe:
                 raise
+
+            basket_recipe = await self.session.scalar(
+                select(Basket).where(
+                    Basket.recipe_uuid == recipe_uuid, Basket.user_uuid == user_uuid
+                )
+            )
+            if basket_recipe:
+                await self.session.delete(basket_recipe)
+
             if user.balance < recipe.cost:
                 raise
             exist_purchased_recipe = await self.session.scalar(
@@ -215,3 +218,61 @@ class PurchaseAdapter(PurchasePort):
             self.session.add(
                 PurchasedRecipes(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
             )
+
+    async def get_purchase_data(self, user_uuid: UUID) -> PurchaseDataSchema:
+        cost_subquery = (
+            select(func.coalesce(func.sum(Recipe.cost), 0))
+            .select_from(Basket)
+            .join(
+                Recipe,
+                Recipe.uuid == Basket.recipe_uuid,
+            )
+            .where(Basket.user_uuid == user_uuid)
+            .scalar_subquery()
+        )
+        stmt = (
+            select(
+                cost_subquery.label("total_cost"),
+                func.count(Recipe.uuid).label("positions_count"),
+                func.coalesce(
+                    func.sum(
+                        Ingredient.proteins + Ingredient.fats + Ingredient.carbohydrates
+                    ),
+                    0,
+                ).label("calories"),
+                func.coalesce(func.avg(Ingredient.proteins), 0).label("avg_proteins"),
+                func.coalesce(func.avg(Ingredient.fats), 0).label("avg_fats"),
+                func.coalesce(func.avg(Ingredient.carbohydrates), 0).label(
+                    "avg_carbohydrates"
+                ),
+            )
+            .select_from(Basket)
+            .outerjoin(
+                Recipe,
+                Recipe.uuid == Basket.recipe_uuid,
+            )
+            .outerjoin(
+                RecipeStep,
+                RecipeStep.recipe_id == Recipe.id,
+            )
+            .outerjoin(
+                RecipeStepIngredient,
+                RecipeStepIngredient.recipe_step_id == RecipeStep.id,
+            )
+            .outerjoin(
+                Ingredient,
+                Ingredient.id == RecipeStepIngredient.ingredient_id,
+            )
+            .where(Basket.user_uuid == user_uuid)
+        )
+
+        result = (await self.session.execute(stmt)).one()
+
+        return PurchaseDataSchema(
+            total_cost=result.total_cost,
+            positions_count=result.positions_count,
+            calories=round(result.calories, 2),
+            avg_proteins=round(result.avg_proteins, 2),
+            avg_fats=round(result.avg_fats, 2),
+            avg_carbohydrates=round(result.avg_carbohydrates, 2),
+        )

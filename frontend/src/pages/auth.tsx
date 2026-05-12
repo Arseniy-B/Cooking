@@ -27,7 +27,7 @@ export default function Auth() {
     config: { tension: 280, friction: 28 },
     exitBeforeEnter: true,
   });
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     if (mode === "sign_up"){

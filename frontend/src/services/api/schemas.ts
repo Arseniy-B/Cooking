@@ -37,7 +37,7 @@ export interface Recipe {
 }
 
 export interface RecipeSearch {
-  name?: string
+  name: string
   difficulty?: number
   country?: string
   total_time_from?: number
@@ -57,3 +57,22 @@ export interface UserCreate {
   username: string
   password: string
 }
+
+export interface Plug {
+  success: boolean
+}
+
+export interface PurchaseData {
+  total_cost: number 
+  positions_count: number
+  calories: number
+  avg_proteins: number
+  avg_fats: number
+  avg_carbohydrates: number
+}
+
+export interface UserData {
+  username: string
+  balance: number 
+}
+
