@@ -3,7 +3,6 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { get_suitable_recipe, BASE_URL } from "@/services/api/handlers"
 import type { Recipe, RecipeSearch } from "@/services/api/schemas"
 import { animated, useSprings } from "@react-spring/web"
-import { View, Shapes } from "lucide-react"
 
 
 export default function CurrentOffers() {

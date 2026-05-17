@@ -22,6 +22,7 @@ import {
 import { check_login, get_basket, get_purchased, get_user_data } from "@/services/api/handlers.ts"
 import type {Recipe, UserData} from "@/services/api/schemas.ts"
 import ScrollToTop from "@/components/scroll_to_top.tsx" 
+import {Toaster} from "@/components/ui/sonner.tsx"
 
 
 export default function RootLayout() {
@@ -29,6 +30,7 @@ export default function RootLayout() {
     <>
       <ScrollToTop />
       <Outlet />
+      <Toaster/>
     </>
   );
 }

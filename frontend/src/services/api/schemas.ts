@@ -12,6 +12,7 @@ export interface RecipeStepIngredient {
 }
 
 export interface RecipeStep {
+  title: string
   step_number: number
   image_path?: string | null
   time_seconds: number

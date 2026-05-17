@@ -64,7 +64,13 @@ export default function TagsSelect({tags, setTags}: TagsSelect){
             <Separator className="mt-10 mb-5"/>
             <div>
               {allTags && allTags.map((val, i) => (
-                <Button key={i} className="rounded-[5px]" variant="ghost" onClick={()=>{addTag(val)}}>{val}</Button>
+                <Button key={i} className="rounded-[5px]" variant={tags.includes(val) ? "default" : "ghost"} onClick={()=>{
+                  if (tags.includes(val)){
+                    removeTag(val)
+                  } else{
+                    addTag(val)
+                  }
+                }}>{val}</Button>
               ))}
             </div>
           </div>

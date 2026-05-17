@@ -6,7 +6,7 @@ import type {
   UserCreate, 
   Plug, 
   PurchaseData, 
-  UserData 
+  UserData,
 } from "@/services/api/schemas"
 
 
@@ -52,7 +52,7 @@ export async function get_purchased(page: number = 1, size: number = 20):Promise
   return await axios.get(BASE_URL + `/purchased?page=${page}&size=${size}`, {withCredentials: true})
 }
 
-export async function buy_recipe(recipe_uuid: string): Promise<AxiosResponse<Plug>> {
+export async function buy_recipe(recipe_uuid: string): Promise<AxiosResponse<Recipe>> {
   return await axios.post(BASE_URL + "/purchased", recipe_uuid, {withCredentials: true})
 }
 

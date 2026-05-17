@@ -30,7 +30,7 @@ class UserAdapter(UserPort):
 
     async def change_password(self): ...
 
-    async def change_avagar(
+    async def change_avatar(
         self,
         user_uuid: UUID,
         file_name: str | None,

@@ -16,30 +16,21 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 import {
   BASE_URL,
-  buy_recipe,
   remove_from_basket,
 } from "@/services/api/handlers"
 
 import {
   BasketContext,
-  PurchasedChangesContext,
-  PurchasedRecipesContext,
   type BasketContextType,
 } from "@/services/contexts"
+import BuyRecipeButton from "./pay_button"
 
 interface LargeCardProps {
   recipe: Recipe
 }
 
 export default function LargeCard({ recipe }: LargeCardProps) {
-  const { purchasedRecipes, setPurchasedRecipes } =
-    useContext(PurchasedRecipesContext)!
 
-  const { purchasedChanges, setPurchasedChanges } =
-    useContext(PurchasedChangesContext)!
-
-  const { basketRecipes, setBasketRecipes } =
-    useContext(BasketContext)!
 
   const basketCtx = useContext(BasketContext) as BasketContextType
 
@@ -61,26 +52,13 @@ export default function LargeCard({ recipe }: LargeCardProps) {
     )
   }, [basketCtx, recipe.uuid])
 
-  const handleBuy = async () => {
-    await buy_recipe(recipe.uuid).then((ans) => {
-      if (ans.data) {
-        setPurchasedRecipes([...purchasedRecipes, recipe])
-
-        setPurchasedChanges(purchasedChanges + 1)
-
-        setBasketRecipes(
-          basketRecipes.filter((r) => r.uuid !== recipe.uuid)
-        )
-      }
-    })
-  }
-
   return (
     <div
       className="
-        w-full lg:w-[60vw]
+        sm:w-full lg:w-[60vw]
         bg-white
         border
+        w-80
         rounded-[5px]
         p-2
         transition duration-300 ease-out
@@ -157,12 +135,6 @@ export default function LargeCard({ recipe }: LargeCardProps) {
                 <ChefHat size={15} />
                 <span>Сложность {recipe.difficulty}/5</span>
               </div>
-
-              <div className="flex items-center gap-2 border rounded-[5px] px-2 py-1 text-sm">
-                <span>
-                  {recipe.recipe_steps?.length || 0} шагов
-                </span>
-              </div>
             </div>
           </div>
 
@@ -191,13 +163,15 @@ export default function LargeCard({ recipe }: LargeCardProps) {
                 <Trash2 size={16} />
               </Button>
 
-              <Button
-                onClick={handleBuy}
-                className="rounded-[5px]"
-              >
-                <ShoppingCart size={16} />
-                Купить
-              </Button>
+              <div>
+                <BuyRecipeButton
+                  recipe={recipe}
+                  variant="default"
+                >
+                  <ShoppingCart size={16} />
+                  Купить
+                </BuyRecipeButton>
+              </div>
             </div>
 
           </div>

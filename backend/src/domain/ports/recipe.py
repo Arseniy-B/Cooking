@@ -55,7 +55,7 @@ class PurchasePort(ABC):
         pass
 
     @abstractmethod
-    async def buy_recipe(self, user_uuid: UUID, recipe_uuid: UUID):
+    async def buy_recipe(self, user_uuid: UUID, recipe_uuid: UUID) -> Recipe:
         pass
 
     @abstractmethod

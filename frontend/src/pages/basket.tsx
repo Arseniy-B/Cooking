@@ -13,6 +13,7 @@ import { get_purchase_data } from "@/services/api/handlers"
 import IncreaseBalanceButton from "@/components/increase_balance_button"
 import { Coins } from "lucide-react"
 import DottedRow from "@/components/dotted_row"
+import { Tickets } from "lucide-react"
 
 
 export default function Basket(){
@@ -29,6 +30,25 @@ export default function Basket(){
     avg_fats: 0,
     avg_carbohydrates: 0,
   })
+  const [activeSection, setActiveSection] = useState('info');
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-80px 0px -50% 0px' }
+    );
+
+    document.querySelectorAll('section[id]').forEach(section => {
+      observer.observe(section);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   async function getPurchasedData(){
     await get_purchase_data()
@@ -48,8 +68,21 @@ export default function Basket(){
 
   return (
     <>
-      <Header></Header>
-      <section className="w-full min-h-screen pt-15 lg:pt-0 grid grid-rows-[auto_10vh_25vh] lg:grid-rows-1 grid-cols-1 lg:grid-cols-[450px_auto_50vw]">
+      <Header>
+        {["info", "basket"].map(section => (
+          <a
+            key={section}
+            href={`#${section}`}
+            className={activeSection === section ? '' : ''}
+          >
+            {section === 'info' ? 'Отчет' : 'Корзина'}
+            {activeSection === section && (
+              <div className="h-px w-full bg-red-800"></div>
+            )}
+          </a>
+        ))}
+      </Header>
+      <section id="info" className="w-full min-h-screen pt-15 lg:pt-0 grid grid-rows-[auto_10vh_25vh] lg:grid-rows-1 grid-cols-1 lg:grid-cols-[450px_auto_50vw]">
         <div className="order-3 lg:order-1 bg-red-800 flex justify-center items-center">
           <div className="w-[70vw] lg:w-90 lg:px-2 lg:py-10 rounded-[10px] backdrop-blur-[1px]">
             <CurrentOffers/>
@@ -72,7 +105,7 @@ export default function Basket(){
             <div className="w-full space-y-2">
               <div className="flex justify-center items-center gap-5">
                 <DottedRow label="Баланс" value={`${userData.balance} ₽`} />
-                <IncreaseBalanceButton/>
+                <IncreaseBalanceButton><Tickets/></IncreaseBalanceButton>
               </div>
               <div className="flex justify-center items-center gap-5">
                 <DottedRow label="Заказов на" value={`${purchaseData.total_cost} ₽`} />
@@ -96,13 +129,13 @@ export default function Basket(){
         </div>
       </section>
       {basketRecipes.length>0 ? (
-        <section className="w-full min-h-screen py-[10vh] bg-gray-100 flex flex-col items-center">
+        <section id="basket" className="w-full gap-5 min-h-screen py-[10vh] bg-gray-100 flex flex-col items-center justify-center">
           {basketRecipes.map((value, i) => (
             <LargeCard recipe={value} key={i} />
           ))}
         </section>
       ): (
-      <section className="h-screen flex flex-col gap-1 bg-gray-100 justify-center items-center">
+      <section id="basket" className="h-screen flex flex-col gap-1 bg-gray-100 justify-center items-center">
         <p className="scroll-m-20 text-2xl font-semibold tracking-tight text-center">
         Вы еще не выбрали рецепты для покупки
         </p>

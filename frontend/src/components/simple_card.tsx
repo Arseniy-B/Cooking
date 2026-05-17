@@ -3,12 +3,12 @@ import BasketButton from "@/components/basket_button"
 import { useContext, useState } from "react"
 import { useSpring, animated } from "@react-spring/web"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BASE_URL } from "@/services/api/handlers"
 import { Eye } from "lucide-react"
 import { PurchasedRecipesContext } from "@/services/contexts"
 import PurchasedRecipeCard from "./purchased_card"
+import BuyRecipeButton from "@/components/pay_button"
 
 
 interface RecipeProps {
@@ -18,9 +18,10 @@ interface RecipeProps {
 const SimpleCard: React.FC<RecipeProps> = ({recipe}) => {
   const {purchasedRecipes} = useContext(PurchasedRecipesContext)!;
 
-  if (purchasedRecipes.some(r=>r.uuid === recipe.uuid)){
+  const purchasedExist = purchasedRecipes.find(r=>r.uuid === recipe.uuid);
+  if (purchasedExist){
     return(
-      <PurchasedRecipeCard recipe={recipe}/>
+      <PurchasedRecipeCard recipe={purchasedExist}/>
     )
   }
   const [loaded, setLoaded] = useState(false)
@@ -29,7 +30,7 @@ const SimpleCard: React.FC<RecipeProps> = ({recipe}) => {
     config: { tension: 120, friction: 20 }
   })
   return (
-    <div className="w-80 h-120 lg:w-80 lg:h-120 bg-white rounded-[5px] border
+    <div className="w-80 h-120 lg:h-120 bg-white rounded-[5px] border
       transition duration-300 ease-out 
       hover:-translate-y-1 hover:scale-100
       hover:shadow-lg active:scale-100
@@ -65,7 +66,11 @@ const SimpleCard: React.FC<RecipeProps> = ({recipe}) => {
          ))}
         </div>
         <div className="flex justify-between">
-          <Button variant="secondary" size="lg" className="w-[50%] rounded-[5px]">Купить</Button>
+          <div className="w-[50%]">
+            <BuyRecipeButton recipe={recipe} variant="secondary">
+              Купить
+            </BuyRecipeButton>
+          </div>
           <div className="flex justify-center items-center"><p className="text-sm leading-none font-medium">{recipe.cost} руб</p></div>
           <BasketButton recipe={recipe}/>
         </div>

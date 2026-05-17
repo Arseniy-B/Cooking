@@ -1,7 +1,6 @@
-from fastapi import APIRouter, status, HTTPException, Body, File, UploadFile
+from fastapi import APIRouter, Body, File, UploadFile
 from fastapi.responses import FileResponse
 from src.handlers.api.v1.depends import AuthAdapterDep, UserAdapterDep
-from src.infrastructure.adapters.auth.exceptions import NotAuthenticatedError
 
 
 router = APIRouter(prefix="/user")
@@ -12,12 +11,9 @@ async def get_user_data(
     auth: AuthAdapterDep,
     user_adapter: UserAdapterDep,
 ): 
-    try:
-        user_uuid = await auth.is_authenticated()
-        user_data = await user_adapter.get_user_data(user_uuid)
-        return user_data
-    except NotAuthenticatedError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    user_uuid = await auth.is_authenticated()
+    user_data = await user_adapter.get_user_data(user_uuid)
+    return user_data
 
 
 @router.post("/balance")
@@ -26,11 +22,8 @@ async def increase_balance(
     user_adapter: UserAdapterDep,
     amount: int = Body()
 ):
-    try:
-        user_uuid = await auth_adapter.is_authenticated()
-        await user_adapter.increase_balance(amount, user_uuid)
-    except NotAuthenticatedError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    user_uuid = await auth_adapter.is_authenticated()
+    await user_adapter.increase_balance(amount, user_uuid)
  
 
 @router.post("/avatar")
@@ -39,12 +32,9 @@ async def add_user_avatar(
     user_adapter: UserAdapterDep,
     file: UploadFile = File()
 ):
-    try:
-        user_uuid = await auth_adapter.is_authenticated()
-        content = await file.read()
-        await user_adapter.change_avagar(user_uuid, file.filename, content)
-    except NotAuthenticatedError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    user_uuid = await auth_adapter.is_authenticated()
+    content = await file.read()
+    await user_adapter.change_avatar(user_uuid, file.filename, content)
 
 
 @router.get("/avatar")
@@ -52,12 +42,9 @@ async def get_user_avatar(
     auth_adapter: AuthAdapterDep,
     user_adapter: UserAdapterDep,
 ):
-    try:
-        user_uuid = await auth_adapter.is_authenticated()
-        file_path = await user_adapter.get_avatar(user_uuid)
-        return FileResponse(file_path)
-    except NotAuthenticatedError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    user_uuid = await auth_adapter.is_authenticated()
+    file_path = await user_adapter.get_avatar(user_uuid)
+    return FileResponse(file_path)
 
 
 @router.post("/password")

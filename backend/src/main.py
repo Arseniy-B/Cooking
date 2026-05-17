@@ -6,6 +6,8 @@ from fastapi_pagination import add_pagination
 
 from src.admin_setup import lifespan
 from src.config import MEDIA_DIR
+
+from src.handlers.exception_handlers import register_exception_handlers
 from src.handlers.api.v1.recipe import router as recipe_router
 from src.handlers.api.v1.basket import router as basket_router
 from src.handlers.api.v1.auth import router as auth_router
@@ -38,3 +40,4 @@ app.include_router(basket_router)
 app.include_router(auth_router)
 app.include_router(purchased_router)
 app.include_router(user_router)
+register_exception_handlers(app)

@@ -19,7 +19,7 @@ class UserPort(ABC):
         pass
 
     @abstractmethod
-    async def change_avagar(
+    async def change_avatar(
         self, user_uuid: UUID, file_name: str | None, file_content: bytes
     ):
         pass

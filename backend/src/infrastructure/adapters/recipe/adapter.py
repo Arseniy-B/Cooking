@@ -20,9 +20,12 @@ from src.domain.entities.recipe import (
 )
 from src.domain.entities.recipe import Tag as TagsSchema
 from src.domain.ports.recipe import BasketPort, PurchasePort, RecipePort
+from src.infrastructure.adapters.user.exceptions import UserNotFoundError ###### Вынести buy_recipe в use_case
 from src.infrastructure.adapters.recipe.exceptions import (
     RecipeNotFoundError,
-    RecordExistError,
+    RecipeAlreadyBasketedError,
+    InsufficientFundsError, 
+    RecipeAlreadyPurchasedError, 
 )
 from src.infrastructure.services.db.db import AsyncSession
 from src.infrastructure.services.db.models import (
@@ -126,7 +129,7 @@ class BasketAdapter(BasketPort):
         res = await self.session.execute(stmt)
         exist_basket_recipe = res.scalar_one_or_none()
         if exist_basket_recipe:
-            raise RecordExistError
+            raise RecipeAlreadyBasketedError
 
         basket = Basket(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
         self.session.add(basket)
@@ -163,6 +166,14 @@ class PurchaseAdapter(PurchasePort):
     async def get_purchased(
         self, user_uuid: UUID, page: int, size: int
     ) -> list[RecipeSchema]:
+        
+        stmt = self._get_main_stmt().where(PurchasedRecipes.user_uuid == user_uuid)
+        db_recipes = await apaginate(
+            self.session, stmt, params=Params(page=page, size=size)
+        )
+        return [RecipeSchema.model_validate(i) for i in db_recipes.items]
+
+    def _get_main_stmt(self):
         stmt = (
             select(Recipe)
             .join(PurchasedRecipes, PurchasedRecipes.recipe_uuid == Recipe.uuid)
@@ -174,26 +185,21 @@ class PurchaseAdapter(PurchasePort):
                 ),
                 selectinload(Recipe.tags)
             )
-            .where(PurchasedRecipes.user_uuid == user_uuid)
         )
+        return stmt
 
-        db_recipes = await apaginate(
-            self.session, stmt, params=Params(page=page, size=size)
-        )
-        return [RecipeSchema.model_validate(i) for i in db_recipes.items]
-
-    async def buy_recipe(self, user_uuid: UUID, recipe_uuid: UUID):
+    async def buy_recipe(self, user_uuid: UUID, recipe_uuid: UUID) -> RecipeSchema:
         async with self.session.begin():
             user = await self.session.scalar(
                 select(User).where(User.uuid == user_uuid).with_for_update()
             )
             if not user:
-                raise
+                raise UserNotFoundError
             recipe = await self.session.scalar(
                 select(Recipe).where(Recipe.uuid == recipe_uuid)
             )
             if not recipe:
-                raise
+                raise RecipeNotFoundError
 
             basket_recipe = await self.session.scalar(
                 select(Basket).where(
@@ -204,7 +210,8 @@ class PurchaseAdapter(PurchasePort):
                 await self.session.delete(basket_recipe)
 
             if user.balance < recipe.cost:
-                raise
+                raise InsufficientFundsError
+
             exist_purchased_recipe = await self.session.scalar(
                 select(PurchasedRecipes).where(
                     PurchasedRecipes.user_uuid == user_uuid,
@@ -212,12 +219,22 @@ class PurchaseAdapter(PurchasePort):
                 )
             )
             if exist_purchased_recipe:
-                raise
+                raise RecipeAlreadyPurchasedError
 
             user.balance -= recipe.cost
             self.session.add(
                 PurchasedRecipes(user_uuid=user_uuid, recipe_uuid=recipe_uuid)
             )
+            await self.session.flush()
+
+            stmt = self._get_main_stmt().where(
+                PurchasedRecipes.user_uuid==user_uuid,
+                PurchasedRecipes.recipe_uuid==recipe_uuid
+            )
+            ans = await self.session.execute(stmt)
+            recipe = ans.scalar_one()
+            purchase = RecipeSchema.model_validate(recipe.__dict__)
+            return purchase
 
     async def get_purchase_data(self, user_uuid: UUID) -> PurchaseDataSchema:
         cost_subquery = (

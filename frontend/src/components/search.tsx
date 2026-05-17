@@ -32,7 +32,7 @@ export default function SearchInput() {
         }}
         placeholder="Выберите блюдо" className="w-full pl-6 outline-none"
       />
-      <div className="bg-orange-400 h-15 w-18 flex items-center justify-center">
+      <div onClick={handleEnter} className="bg-orange-400 h-15 w-18 flex items-center justify-center">
         <Search/>
       </div>
     </div>

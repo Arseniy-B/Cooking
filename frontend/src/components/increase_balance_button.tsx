@@ -1,5 +1,4 @@
 import { UserDataContext } from "@/services/contexts"
-import { Tickets } from "lucide-react"
 import { useContext, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
@@ -18,7 +17,7 @@ import { get_user_data, increase_balance } from "@/services/api/handlers";
 import { Button } from "./ui/button"
 
 
-export default function IncreaseBalanceButton(){
+export default function IncreaseBalanceButton({children}: {children: React.ReactNode}){
   const { setUserData } = useContext(UserDataContext)!;
   const [value, setValue] = useState<number>(100);
 
@@ -33,7 +32,7 @@ export default function IncreaseBalanceButton(){
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button className="rounded-[5px]" variant="outline"/>}>
-        <Tickets/>
+        {children}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -56,7 +55,7 @@ export default function IncreaseBalanceButton(){
             value={value}
             onValueChange={(v)=>{setValue(v as number)}}
             min={1}
-            max={100}
+            max={500}
             step={1}
           />
         </div>

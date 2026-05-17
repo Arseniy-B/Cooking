@@ -6,5 +6,13 @@ class RecipeNotFoundError(BaseRecipeAdapterError):
     pass
 
 
-class RecordExistError(BaseRecipeAdapterError):
+class RecipeAlreadyBasketedError(BaseRecipeAdapterError):
+    pass
+
+
+class RecipeAlreadyPurchasedError(BaseRecipeAdapterError):
+    pass
+
+
+class InsufficientFundsError(BaseRecipeAdapterError):
     pass

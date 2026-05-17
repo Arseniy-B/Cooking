@@ -28,6 +28,7 @@ export default function Search(){
   const [tags, setTags] = useState<string[]>([])
   const { scrollY } = useScroll();
   const [isLg, setIsLg] = useState(false)
+  const [name, setName] = useState("")
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)")
@@ -50,16 +51,13 @@ export default function Search(){
 
   useEffect(()=>{
     const allParams = Object.fromEntries(searchParams)
+    setName(allParams.name ?? "")
     setSearch({...search, cost: true, ...allParams})
   }, [searchParams])
   
   useEffect(()=>{
     getRecipes()
-  }, [search, tags])
-
-  const nameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch({...search, name: e.target.value})
-  }
+  }, [tags, search])
 
   return (
     <>
@@ -69,8 +67,17 @@ export default function Search(){
           <div className="flex flex-col justify-center mt-30 items-center px-[20%]">
             <div className="flex w-full justify-center">
               <InputGroup className="rounded-[5px]">
-                <InputGroupInput onChange={nameChange} value={search.name} id="input-group-url" placeholder="Введите название блюда" />
-                <InputGroupAddon align="inline-end">
+                <InputGroupInput 
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>)=>{
+                    if (e.key === "Enter"){
+                      setSearch({...search, name: e.currentTarget.value})
+                    }
+                  }}
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)}
+                  id="input-group-url" 
+                  placeholder="Введите название блюда" />
+                <InputGroupAddon align="inline-end" onClick={()=>{setSearch({...search, name: name})}}>
                   <SearchIcon />
                 </InputGroupAddon>
               </InputGroup>

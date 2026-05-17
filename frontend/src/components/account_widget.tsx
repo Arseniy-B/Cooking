@@ -1,7 +1,6 @@
 import { AuthContext, UserDataContext } from "@/services/contexts";
 import { Button } from "@/components/ui/button";
 import { useContext, useState, useEffect, useRef } from "react";
-import IncreaseBalanceButton from "@/components/increase_balance_button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { logout, get_avatar, upload_avatar } from "@/services/api/handlers"
 import { useNavigate } from "react-router-dom";
