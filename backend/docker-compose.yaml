@@ -1,20 +1,40 @@
 services:
   db:
-    image: postgres:latest
-    ports: 
-      - "5432:5432"
+    image: postgres:18-alpine
     environment:
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
-    command: >
-      sh -c "
-        docker-entrypoint.sh postgres &
-        until pg_isready -U postgres; do sleep 1; done;
-        psql -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS \"pg_trgm\";'
-        wait $$!
-      "
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pg_data:/var/lib/postgresql
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    env_file:
+      - .env
   redis:
-    image: redis:latest
+    image: redis:8
+  migration:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+  back:
+    build: .
     ports:
-      - "6379:6379"
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+volumes:
+  pg_data:

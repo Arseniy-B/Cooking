@@ -1,8 +1,7 @@
-from pydantic import BaseModel
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
 from pathlib import Path
 
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -15,7 +14,7 @@ USERS_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class PostgresSettings(BaseSettings):
-    DB_HOST: str = "localhost"
+    DB_HOST: str = "db"
     DB_PORT: str = "5432"
     DB_USER: str = "user"
     DB_PASS: str = "password"
@@ -27,7 +26,6 @@ class PostgresSettings(BaseSettings):
     def DATABASE_URL(self):
         url = f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@/{self.DB_NAME}?host={self.DB_HOST}&port={self.DB_PORT}"
         return url
-    model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="allow")
 
 
 class RedisSettings(BaseSettings):
@@ -38,13 +36,10 @@ class RedisSettings(BaseSettings):
     def get_url(self):
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
-    model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="allow")
-
 
 class AdminPanel(BaseSettings):
     ADMIN_PASSWORD: str = "admin"
     ADMIN_USERNAME: str = "admin"
-    model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="allow")
 
 
 class Config(BaseModel):

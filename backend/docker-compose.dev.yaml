@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:18-alpine
+    ports: 
+      - "${DB_PORT}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pg_data_dev:/var/lib/postgresql
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    env_file:
+      - .dev.env
+  redis:
+    image: redis:latest
+    ports:
+      - "${REDIS_PORT}:6379"
+    env_file:
+      - .dev.env
+volumes:
+  pg_data_dev:
